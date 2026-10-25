@@ -15,7 +15,7 @@ export interface Habitant {
 }
 
 const CONNUS: Record<string, Omit<Habitant, "id">> = {
-  max: { nom: "Max", genre: "habitant", role: "Assistant personnel", couleurs: ["#ffb37a", "#f2785a"], forme: "galet" },
+  max: { nom: "Max", genre: "habitant", role: "Assistant personnel", couleurs: ["#e3b4ff", "#b65cf0"], forme: "galet" },
 };
 
 /** Les clients du cerveau qui ne sont pas des agents. */

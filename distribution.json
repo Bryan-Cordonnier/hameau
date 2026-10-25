@@ -16,8 +16,8 @@
         "text": "#26221f",
         "muted": "#7a736c",
         "faint": "#a8a19a",
-        "accent": "#f2785a",
-        "accent-soft": "#fde4da",
+        "accent": "#a24ee0",
+        "accent-soft": "#f1e2fb",
         "accent-text": "#ffffff",
         "scrim": "rgba(244, 242, 238, 0.55)"
       }
@@ -36,16 +36,16 @@
         "text": "#f1ece6",
         "muted": "#a39b92",
         "faint": "#7a736c",
-        "accent": "#f59a7d",
-        "accent-soft": "#3d2a22",
-        "accent-text": "#1c1714",
+        "accent": "#c98bff",
+        "accent-soft": "#33233f",
+        "accent-text": "#1a1024",
         "scrim": "rgba(22, 20, 18, 0.6)"
       }
     }
   ],
-  "logo": "<rect width=\"1024\" height=\"1024\" rx=\"230\" fill=\"#a8d8e8\"/><ellipse cx=\"512\" cy=\"760\" rx=\"380\" ry=\"115\" fill=\"#9ccc7a\"/><path d=\"M512 250c170 0 300 110 312 290 12 190-124 330-312 330S188 730 200 540c12-180 142-290 312-290z\" fill=\"#f58c63\"/><circle cx=\"420\" cy=\"540\" r=\"40\" fill=\"#4a2a1d\"/><circle cx=\"604\" cy=\"540\" r=\"40\" fill=\"#4a2a1d\"/><path d=\"M452 650c34 34 90 34 124-8\" stroke=\"#4a2a1d\" stroke-width=\"28\" stroke-linecap=\"round\" fill=\"none\"/>",
+  "logo": "<rect width=\"128\" height=\"128\" rx=\"29\" fill=\"#1c1626\"/><path d=\"M64 40V24\" stroke=\"#8a34c9\" stroke-width=\"4\" stroke-linecap=\"round\"/><circle cx=\"64\" cy=\"22\" r=\"6\" fill=\"#ffd36e\"/><path d=\"M33 114C17 114 9 101 13 89C5 80 9 65 22 62C23 47 35 37 46 43C53 31 75 31 82 43C93 37 105 47 106 62C119 65 123 80 115 89C119 101 111 114 95 114Z\" fill=\"#b65cf0\"/><rect x=\"24\" y=\"57.5\" width=\"80\" height=\"43\" rx=\"21.5\" fill=\"#24123a\"/><rect x=\"40\" y=\"69\" width=\"12\" height=\"16\" rx=\"6\" fill=\"#ffe3ff\"/><rect x=\"76\" y=\"69\" width=\"12\" height=\"16\" rx=\"6\" fill=\"#ffe3ff\"/><path d=\"M56 89c5 4 11 4 16 0\" stroke=\"#ffe3ff\" stroke-width=\"3.5\" stroke-linecap=\"round\" fill=\"none\"/><ellipse cx=\"22\" cy=\"92\" rx=\"5\" ry=\"3.5\" fill=\"#ff9fd8\"/><ellipse cx=\"106\" cy=\"92\" rx=\"5\" ry=\"3.5\" fill=\"#ff9fd8\"/>",
   "logoPlein": true,
-  "logoViewBox": "0 0 1024 1024",
+  "logoViewBox": "0 0 128 128",
   "icons": {
     "ile": "<ellipse cx=\"12\" cy=\"17\" rx=\"10\" ry=\"4.5\" fill=\"#8fcbe0\"/><ellipse cx=\"12\" cy=\"15.5\" rx=\"8\" ry=\"3.4\" fill=\"#9ccc7a\"/><rect x=\"8\" y=\"9\" width=\"5\" height=\"6\" rx=\"1\" fill=\"#f2c14e\"/><path d=\"M7.4 9.4 10.5 6.5l3.1 2.9z\" fill=\"#e86a4f\"/><circle cx=\"16\" cy=\"12.5\" r=\"2.6\" fill=\"#f58c63\"/>",
     "tableau": "<rect x=\"2.5\" y=\"3.5\" width=\"19\" height=\"17\" rx=\"3\" fill=\"#caa477\"/><rect x=\"5\" y=\"6\" width=\"6\" height=\"7\" rx=\"1\" fill=\"#fffdf6\"/><rect x=\"13\" y=\"7\" width=\"6\" height=\"5.5\" rx=\"1\" fill=\"#fff3d6\"/><rect x=\"8\" y=\"14\" width=\"7\" height=\"4.5\" rx=\"1\" fill=\"#e3ecff\"/><circle cx=\"8\" cy=\"6\" r=\"1.2\" fill=\"#e25c4a\"/><circle cx=\"16\" cy=\"7\" r=\"1.2\" fill=\"#3f9d6a\"/>",
