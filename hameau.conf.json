@@ -1,0 +1,67 @@
+{
+  "productName": "Hameau",
+  "version": "0.1.0",
+  "identifier": "fr.cordonnier.hameau",
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "create": false,
+        "title": "Hameau",
+        "width": 1360,
+        "height": 860,
+        "minWidth": 1024,
+        "minHeight": 640,
+        "center": true,
+        "resizable": true,
+        "decorations": false,
+        "shadow": true,
+        "visible": false
+      },
+      {
+        "label": "apercu",
+        "create": false,
+        "title": "Aperçu rapide — Hameau",
+        "url": "apercu.html",
+        "width": 1280,
+        "height": 800,
+        "visible": false,
+        "transparent": true,
+        "decorations": false,
+        "shadow": false,
+        "resizable": false,
+        "alwaysOnTop": true,
+        "skipTaskbar": true
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self' ipc: http://ipc.localhost; img-src 'self' asset: http://asset.localhost data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; frame-src http://plugins.localhost plugins:; connect-src 'self' ipc: http://ipc.localhost https://*.ts.net:* https://api.github.com"
+    }
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDY2QzcxREQyRDUzNTJGRDgKUldUWUx6WFYwaDNIWm1PRkZ3WkFpUDNCVEJLY20wSFBjdlp1eFdKUjN3UmtPUmMrU3ZMZjVGSlEK",
+      "endpoints": [
+        "https://github.com/Bryan-Cordonnier/hameau/releases/latest/download/latest.json"
+      ]
+    }
+  },
+  "bundle": {
+    "createUpdaterArtifacts": false,
+    "publisher": "Bryan Cordonnier",
+    "copyright": "© 2026 Bryan Cordonnier",
+    "shortDescription": "Régler et utiliser Max et le cerveau",
+    "windows": {
+      "wix": {
+        "upgradeCode": "4D052D1B-C352-4E1B-B42F-4FDBD2779FEB"
+      }
+    },
+    "icon": [
+      "../../../../icons/32x32.png",
+      "../../../../icons/128x128.png",
+      "../../../../icons/128x128@2x.png",
+      "../../../../icons/icon.icns",
+      "../../../../icons/icon.ico"
+    ]
+  }
+}

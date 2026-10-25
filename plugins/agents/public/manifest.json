@@ -1,0 +1,13 @@
+{
+  "id": "agents",
+  "name": "Équipe",
+  "version": "0.1.0",
+  "apiVersion": "^3",
+  "author": "Bryan Cordonnier",
+  "description": "Régler les agents : identité, personnalité, permissions, modèle local et état du serveur.",
+  "color": "#d9774b",
+  "icon": "settings",
+  "permissions": ["distant"],
+  "apps": [{ "id": "equipe", "name": "Équipe", "entry": "apps/equipe/index.html", "accepts": [] }],
+  "pages": [{ "id": "equipe", "title": "Équipe", "icon": "equipe", "layout": { "type": "app", "app": "equipe" } }]
+}

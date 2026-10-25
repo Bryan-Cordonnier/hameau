@@ -1,0 +1,25 @@
+{
+  "id": "harnais",
+  "name": "Hameau",
+  "version": "0.1.0",
+  "apiVersion": "^3",
+  "author": "Bryan Cordonnier",
+  "description": "Utiliser les agents : l'île où on les voit travailler, le tableau des tâches, les chantiers, le courrier et le petit mot.",
+  "color": "#f2785a",
+  "icon": "home",
+  "permissions": ["distant"],
+  "apps": [
+    { "id": "ile", "name": "Le hameau", "entry": "apps/ile/index.html", "accepts": [] },
+    { "id": "tableau", "name": "Tableau", "entry": "apps/tableau/index.html", "accepts": [] },
+    { "id": "chantiers", "name": "Chantiers", "entry": "apps/chantiers/index.html", "accepts": [] },
+    { "id": "courrier", "name": "Courrier", "entry": "apps/courrier/index.html", "accepts": [] },
+    { "id": "petitmot", "name": "Petit mot", "entry": "apps/petitmot/index.html", "accepts": [] }
+  ],
+  "pages": [
+    { "id": "ile", "title": "Hameau", "icon": "ile", "layout": { "type": "app", "app": "ile" } },
+    { "id": "tableau", "title": "Tableau", "icon": "tableau", "layout": { "type": "app", "app": "tableau" } },
+    { "id": "chantiers", "title": "Chantiers", "icon": "chantier", "layout": { "type": "app", "app": "chantiers" } },
+    { "id": "courrier", "title": "Courrier", "icon": "courrier", "layout": { "type": "app", "app": "courrier" } },
+    { "id": "petitmot", "title": "Petit mot", "icon": "petitmot", "layout": { "type": "app", "app": "petitmot" } }
+  ]
+}

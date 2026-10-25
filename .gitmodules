@@ -1,0 +1,3 @@
+[submodule "etable"]
+	path = etable
+	url = https://github.com/etable-project/etable.git

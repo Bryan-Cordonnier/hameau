@@ -1,0 +1,27 @@
+{
+  "name": "hameau",
+  "private": true,
+  "description": "Hameau : l'application pour régler et utiliser Max et le cerveau, construite sur le moteur Etable.",
+  "author": "Bryan Cordonnier",
+  "workspaces": [
+    "etable/packages/*",
+    "etable/apps/desktop",
+    "packages/*",
+    "plugins/*"
+  ],
+  "scripts": {
+    "build:plugins": "npm run build -w plugins/harnais -w plugins/agents -w plugins/cerveau",
+    "check": "npm run check --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "dev": "npm run build:plugins && node scripts/tauri.mjs dev",
+    "build": "npm run build:plugins && node scripts/tauri.mjs build",
+    "android:init": "node scripts/tauri.mjs android init --ci && node etable/apps/desktop/src-tauri/android/appliquer-correctifs.mjs",
+    "android:build": "npm run build:plugins && node scripts/tauri.mjs android build --apk --ci"
+  },
+  "devDependencies": {
+    "typescript": "~6.0.3"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
