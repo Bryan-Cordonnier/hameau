@@ -34,16 +34,36 @@
   let onglet = $state<(typeof ONGLETS)[number][0]>("identite");
   let serveur = $state<EtatServeur | null>(null);
   let erreur = $state("");
+  let reglages = $state<Record<string, string>>({});
+  // brouillon des champs modifiés, enregistré d'un coup
+  let brouillon = $state<Record<string, string>>({});
+  let message = $state("");
 
   async function charger(): Promise<void> {
     try {
-      [agents, serveur] = await Promise.all([cerveau.agents(), cerveau.serveur()]);
+      [agents, serveur, reglages] = await Promise.all([cerveau.agents(), cerveau.serveur(), cerveau.reglages()]);
       erreur = "";
     } catch (e) {
       erreur = (e as Error).message;
     }
   }
   void charger();
+
+  const valeur = (cle: string) => brouillon[cle] ?? reglages[cle] ?? "";
+  const changes = $derived(Object.keys(brouillon).filter((c) => brouillon[c] !== (reglages[c] ?? "")));
+
+  async function enregistrer(): Promise<void> {
+    const modele = changes.some((c) => c.startsWith("llm_"));
+    try {
+      for (const c of changes) await cerveau.regler(c, brouillon[c]!);
+      brouillon = {};
+      reglages = await cerveau.reglages();
+      message = modele ? "Enregistré. Le modèle redémarre avec ces réglages (quelques minutes)." : "Enregistré. Max s'en sert dès son prochain tour.";
+      erreur = "";
+    } catch (e) {
+      erreur = (e as Error).message;
+    }
+  }
 
   const habitants = $derived(agents.filter((a) => habitant(a.nom)?.genre === "habitant"));
   const visiteurs = $derived(agents.filter((a) => habitant(a.nom)?.genre === "visiteur"));
@@ -102,10 +122,15 @@
           <div class="champ"><span>Dernière action</span><b>{agent.derniere_action ?? "jamais"}</b></div>
           <div class="champ"><span>État</span><b>{agent.actif ? "actif" : "révoqué"}</b></div>
           {#if estLocal}
-            <div class="champ large">
+            <label class="champ large">
               <span>Personnalité et consigne</span>
-              <p class="petit">Se règle encore dans le harnais (fichier postes.json). Ici dans la prochaine version : nom, personnalité, rôle, heures de silence et rapport du soir, modifiables.</p>
-            </div>
+              <textarea rows="12" value={valeur(`personnalite_${agent.nom}`)} oninput={(e) => (brouillon[`personnalite_${agent.nom}`] = e.currentTarget.value)}
+                placeholder="Vide : la consigne d'origine du harnais. Écris ici comment {nomDe(agent.nom)} doit parler et se comporter."></textarea>
+            </label>
+            <label class="champ"><span>Heures de silence</span>
+              <input value={valeur("silence")} placeholder="00:00-07:00" oninput={(e) => (brouillon.silence = e.currentTarget.value)} /></label>
+            <label class="champ"><span>Fin de conversation après (minutes)</span>
+              <input type="number" min="5" max="720" value={valeur("session_minutes")} oninput={(e) => (brouillon.session_minutes = e.currentTarget.value)} /></label>
           {/if}
         </section>
       {:else if onglet === "permissions"}
@@ -132,10 +157,25 @@
           {:else}
             <p class="petit large">😴 Le modèle ne tourne pas : pas de carte graphique en ce moment. Max dort.</p>
           {/if}
-          <div class="champ large">
-            <span>Réglages de llama.cpp</span>
-            <p class="petit">Prochaine version : tous les réglages (fichier, contexte, couches sur la carte, répartition sur plusieurs cartes, cache, décodage spéculatif, threads, lots, échantillonnage) avec redémarrage du modèle depuis ici.</p>
-          </div>
+          <label class="champ"><span>Contexte (jetons)</span>
+            <select value={valeur("llm_contexte")} onchange={(e) => (brouillon.llm_contexte = e.currentTarget.value)}>
+              {#each ["8192", "16384", "32768", "65536", "98304", "131072"] as c}<option value={c}>{Number(c).toLocaleString("fr-FR")}</option>{/each}
+            </select></label>
+          <label class="champ"><span>Conversations en parallèle</span>
+            <select value={valeur("llm_emplacements")} onchange={(e) => (brouillon.llm_emplacements = e.currentTarget.value)}>
+              {#each ["1", "2", "3", "4"] as c}<option value={c}>{c}</option>{/each}
+            </select></label>
+          <label class="champ"><span>Température (vide : celle du modèle)</span>
+            <input type="number" min="0" max="2" step="0.05" value={valeur("llm_temperature")} oninput={(e) => (brouillon.llm_temperature = e.currentTarget.value)} /></label>
+          <label class="champ"><span>Réflexion avant de répondre</span>
+            <select value={valeur("llm_reflexion")} onchange={(e) => (brouillon.llm_reflexion = e.currentTarget.value)}>
+              <option value="off">Non (plus rapide)</option><option value="on">Oui (plus réfléchi, plus lent)</option>
+            </select></label>
+          <label class="champ"><span>Mémoire de conversation (cache)</span>
+            <select value={valeur("llm_cache")} onchange={(e) => (brouillon.llm_cache = e.currentTarget.value)}>
+              <option value="q4_0">Compacte (q4)</option><option value="q8_0">Précise (q8)</option><option value="f16">Pleine (f16, beaucoup de mémoire)</option>
+            </select></label>
+          <p class="petit large">Enregistrer un de ces réglages redémarre le modèle : Max est indisponible quelques minutes.</p>
         </section>
       {:else}
         <section class="grille">
@@ -151,6 +191,10 @@
           {/each}
         </section>
       {/if}
+      {#if changes.length}
+        <div class="enregistrer"><button class="principal" onclick={enregistrer}>Enregistrer ({changes.length})</button><button onclick={() => (brouillon = {})}>Annuler</button></div>
+      {/if}
+      {#if message}<p class="petit" role="status">{message}</p>{/if}
     {/if}
   </main>
 
@@ -172,6 +216,11 @@
 </div>
 
 <style>
+  textarea, input, select { width: 100%; box-sizing: border-box; padding: 8px 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); color: var(--text); font: inherit; }
+  textarea { resize: vertical; line-height: 1.45; }
+  .enregistrer { display: flex; gap: 8px; margin-top: 14px; }
+  .enregistrer button { padding: 8px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; font: inherit; font-weight: 600; }
+  .enregistrer .principal { background: var(--accent); border-color: var(--accent); color: #fff; }
   .page {
     display: grid;
     grid-template-columns: 230px minmax(0, 1fr) 280px;

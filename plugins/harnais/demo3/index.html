@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="fr" data-theme="sombre">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Hameau — le bureau</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --fond: #e9e6ef; --panneau: rgba(255, 255, 255, 0.86); --bord: rgba(20, 24, 33, 0.08); --texte: #1a1d24; --doux: #6b7280; --accent: #a24ee0; --accent-doux: rgba(162, 78, 224, 0.12);
+        --ok: #2fa66a; --attente: #e3a33a; --info: #4f8fe8; --ombre: 0 8px 30px rgba(20, 24, 33, 0.1);
+      }
+      [data-theme="sombre"] {
+        --fond: #14121a; --panneau: rgba(24, 27, 34, 0.82); --bord: rgba(255, 255, 255, 0.07); --texte: #eef0f4; --doux: #8b92a0; --accent: #c98bff; --accent-doux: rgba(201, 139, 255, 0.15);
+        --ombre: 0 10px 34px rgba(0, 0, 0, 0.45);
+      }
+      * { box-sizing: border-box; }
+      [hidden] { display: none !important; }
+      html, body { margin: 0; height: 100%; overflow: hidden; background: var(--fond); color: var(--texte); font: 500 13px/1.4 Manrope, system-ui, sans-serif; transition: background 0.4s; }
+      canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+      .p { position: fixed; background: var(--panneau); border: 1px solid var(--bord); border-radius: 16px; box-shadow: var(--ombre); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+      .haut { top: 14px; left: 14px; right: 14px; height: 50px; display: flex; align-items: center; gap: 12px; padding: 0 10px 0 14px; }
+      .marque { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 15px; }
+      .recherche { flex: 1; min-width: 0; max-width: 420px; white-space: nowrap; overflow: hidden; display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 10px; background: var(--accent-doux); color: var(--doux); }
+      .zone { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 10px; border: 1px solid var(--bord); cursor: pointer; background: none; color: var(--texte); font: inherit; }
+      .zone b { font-weight: 700; }
+      .live { display: flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 999px; background: rgba(47, 166, 106, 0.14); color: var(--ok); font-weight: 700; }
+      .live::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--ok); animation: pulse 1.6s infinite; }
+      @keyframes pulse { 50% { opacity: 0.3; } }
+      .esp { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+      .bouton { border: 1px solid var(--bord); background: none; color: var(--texte); border-radius: 10px; padding: 7px 10px; cursor: pointer; font: inherit; font-weight: 600; }
+      .bouton:hover { background: var(--accent-doux); }
+      .kpis { top: 78px; left: 14px; display: flex; gap: 10px; background: none; border: 0; box-shadow: none; backdrop-filter: none; }
+      .kpis .kpi { position: static; }
+      .kpi { display: flex; gap: 10px; align-items: center; padding: 10px 14px; }
+      .kpi .ic { width: 32px; height: 32px; border-radius: 10px; display: grid; place-items: center; background: var(--accent-doux); font-size: 16px; }
+      .kpi small { color: var(--doux); display: block; font-size: 11px; }
+      .kpi b { font-size: 18px; font-weight: 800; }
+      .kpi i { font-style: normal; font-size: 11px; color: var(--ok); margin-left: 4px; }
+      .outils { right: 14px; top: 78px; display: grid; gap: 2px; padding: 6px; }
+      .outils button { width: 32px; height: 32px; border: 0; background: none; color: var(--texte); border-radius: 8px; cursor: pointer; font-size: 15px; }
+      .outils button:hover { background: var(--accent-doux); }
+      .fiche { right: 62px; top: 78px; width: 300px; padding: 14px; display: grid; gap: 10px; transition: opacity 0.25s, transform 0.25s; }
+      
+      .fiche h3 { margin: 0; font-size: 16px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+      .fiche .lignes { display: grid; gap: 6px; }
+      .fiche .ligne { display: flex; justify-content: space-between; color: var(--doux); }
+      .fiche .ligne b { color: var(--texte); font-weight: 700; }
+      .chip { display: inline-flex; align-items: center; gap: 5px; padding: 2px 9px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+      .chip.ok { background: rgba(47, 166, 106, 0.15); color: var(--ok); }
+      .chip.att { background: rgba(227, 163, 58, 0.16); color: var(--attente); }
+      .chip.info { background: rgba(79, 143, 232, 0.15); color: var(--info); }
+      .chip.dort { background: var(--accent-doux); color: var(--doux); }
+      .barre { height: 6px; border-radius: 9px; background: var(--accent-doux); overflow: hidden; }
+      .barre i { display: block; height: 100%; background: var(--accent); border-radius: 9px; }
+      .suivi { left: 14px; bottom: 14px; width: min(560px, 46vw); padding: 12px 16px; display: grid; gap: 10px; }
+      .suivi .tete { display: flex; justify-content: space-between; color: var(--doux); }
+      .suivi .tete b { color: var(--texte); }
+      .etapes { display: flex; align-items: flex-start; }
+      .etape { flex: 1; display: grid; justify-items: center; gap: 4px; position: relative; font-size: 11px; color: var(--doux); text-align: center; }
+      .etape::before { content: ""; position: absolute; top: 9px; left: -50%; right: 50%; height: 2px; background: var(--bord); }
+      .etape:first-child::before { display: none; }
+      .etape.fait::before, .etape.encours::before { background: var(--accent); }
+      .etape span { width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; background: var(--fond); border: 2px solid var(--bord); position: relative; font-size: 10px; }
+      .etape.fait span { background: var(--accent); border-color: var(--accent); color: #fff; }
+      .etape.encours span { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-doux); }
+      .etape.fait, .etape.encours { color: var(--texte); font-weight: 600; }
+      .tableau { right: 14px; bottom: 14px; width: min(430px, 36vw); padding: 10px; }
+      .onglets { display: flex; gap: 4px; margin-bottom: 6px; }
+      .onglets button { border: 0; background: none; color: var(--doux); padding: 5px 10px; border-radius: 8px; cursor: pointer; font: inherit; font-weight: 700; }
+      .onglets button.on { background: var(--accent-doux); color: var(--texte); }
+      .rangee { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center; padding: 6px 6px; border-radius: 8px; }
+      .rangee:hover { background: var(--accent-doux); }
+      .rangee small { color: var(--doux); display: block; }
+      .etat { display: flex; gap: 6px; } .etat span { padding: 4px 9px; border-radius: 999px; background: var(--accent-doux); font-weight: 700; font-size: 12px; }
+      .activite { left: 14px; bottom: 14px; width: 300px; padding: 12px 14px; display: grid; gap: 6px; font-size: 12.5px; }
+      .activite small { color: var(--doux); margin-left: 4px; }
+      .tag { position: fixed; transform: translate(-50%, -100%); pointer-events: none; display: flex; gap: 6px; align-items: center; padding: 4px 9px; border-radius: 999px; background: var(--panneau); border: 1px solid var(--bord); box-shadow: var(--ombre); font-size: 11.5px; font-weight: 700; white-space: nowrap; backdrop-filter: blur(10px); transition: opacity 0.2s; }
+      .tag .pt { width: 7px; height: 7px; border-radius: 50%; }
+      .tag.agent { background: var(--accent); color: #fff; border-color: transparent; }
+      .reseau { position: fixed; top: 70px; left: 50%; transform: translateX(-50%); width: 300px; padding: 8px; display: grid; gap: 2px; }
+      .reseau button { all: unset; cursor: pointer; display: grid; grid-template-columns: 26px 1fr 70px; gap: 8px; align-items: center; padding: 7px 8px; border-radius: 9px; }
+      .reseau button:hover { background: var(--accent-doux); }
+      .reseau small { color: var(--doux); display: block; }
+    </style>
+  </head>
+  <body>
+    <canvas id="c"></canvas>
+    <div id="tags"></div>
+    <header class="p haut">
+      <div class="marque"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="28" height="28"><defs>
+  <linearGradient id="v" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e3b4ff"/><stop offset=".55" stop-color="#b65cf0"/><stop offset="1" stop-color="#8a34c9"/></linearGradient>
+  <linearGradient id="ecran" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b1640"/><stop offset="1" stop-color="#1a0d29"/></linearGradient>
+</defs><g transform="translate(0 6)"><path d="M33 108C17 108 9 95 13 83C5 74 9 59 22 56C23 41 35 31 46 37C53 25 75 25 82 37C93 31 105 41 106 56C119 59 123 74 115 83C119 95 111 108 95 108Z" fill="url(#v)"/><path d="M64 30V14" stroke="#8a34c9" stroke-width="4" stroke-linecap="round"/><circle cx="64" cy="12" r="6" fill="#ffd36e"/><rect x="24" y="51.5" width="80" height="43" rx="21.5" fill="url(#ecran)"/><rect x="40" y="63" width="12" height="16" rx="6" fill="#ffe3ff"/><rect x="76" y="63" width="12" height="16" rx="6" fill="#ffe3ff"/><path d="M56 83c5 4 11 4 16 0" stroke="#ffe3ff" stroke-width="3.5" stroke-linecap="round" fill="none"/><ellipse cx="22" cy="86" rx="5" ry="3.5" fill="#ff9fd8" opacity=".7"/><ellipse cx="106" cy="86" rx="5" ry="3.5" fill="#ff9fd8" opacity=".7"/></g></svg>
+Hameau</div>
+      <div class="recherche">⌕ <span>Chercher une tâche, un mail, un neurone, un agent…</span></div>
+      <button class="zone" id="zone">🧭 <span><b id="zone-nom">Tout le bureau</b></span> ▾</button>
+      <div class="live" id="heure">En direct</div>
+      <div class="etat"><span title="Max"><span id="max-etat">🟣 Max au travail</span></span><span title="Tâches en cours">📌 5</span><span title="Rapports à lire">📮 2</span><span title="Mails à trier">✉️ 12</span></div>
+      <div class="esp">
+        <button class="bouton" id="theme" title="Changer de thème">☀︎ Clair</button>
+        <span class="chip dort">🔔 2</span>
+      </div>
+    </header>
+    <div class="reseau p" id="reseau" hidden></div>
+
+    
+
+    <div class="p outils">
+      <button id="plus" title="Zoomer">＋</button><button id="moins" title="Dézoomer">－</button><button id="centre" title="Recentrer">◎</button><button id="nuit" title="Jour / nuit">◐</button>
+    </div>
+
+    <aside class="p fiche" id="fiche" hidden></aside>
+    <section class="p activite" id="activite"><b>Dernières actions</b><div>🟣 Max a trié 12 mails <small>il y a 4 min</small></div><div>✴️ Claude a modifié le cahier Hameau <small>il y a 9 min</small></div><div>📮 Rapport « Tri des mails » arrivé <small>il y a 20 min</small></div></section>
+
+    
+
+    
+
+    <script type="module" src="./demo.ts"></script>
+  </body>
+</html>

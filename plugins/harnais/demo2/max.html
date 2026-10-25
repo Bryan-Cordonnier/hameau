@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Max en violet</title>
+<style>
+  body { margin: 0; background: #16121c; color: #f1eaf7; font: 15px/1.5 system-ui, sans-serif; }
+  main { max-width: 1100px; margin: 0 auto; padding: 32px 16px; }
+  h1 { margin: 0 0 6px; font-size: 24px; }
+  p.sous { margin: 0 0 24px; color: #a99cb8; }
+  .grille { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+  .carte { background: #201a29; border: 1px solid #312a3d; border-radius: 18px; padding: 20px 16px; display: grid; gap: 12px; justify-items: center; text-align: center; }
+  .carte h2 { margin: 0; font-size: 17px; }
+  .carte p { margin: 0; color: #a99cb8; font-size: 13.5px; }
+  .tailles { display: flex; align-items: end; gap: 12px; }
+  .fond-clair { background: #f6f1fb; border-radius: 12px; padding: 6px; display: flex; gap: 10px; align-items: end; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Max : le nuage à visière</h1>
+  <p class="sous">En grand, en avatar (64 et 32 px), puis sur fond clair.</p>
+  <div class="grille" id="grille"></div>
+</main>
+<script>
+// palette : orchidée clair → violet rosé → prune
+const D = `<defs>
+  <linearGradient id="v" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e3b4ff"/><stop offset=".55" stop-color="#b65cf0"/><stop offset="1" stop-color="#8a34c9"/></linearGradient>
+  <linearGradient id="ecran" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b1640"/><stop offset="1" stop-color="#1a0d29"/></linearGradient>
+</defs>`;
+const visages = [
+  { nom: "1 — Le nuage à visière", texte: "La première version, visage et pommettes centrés sur le nuage, antenne accrochée à sa tête.", svg: `${D}<g transform="translate(0 6)"><path d="M33 108C17 108 9 95 13 83C5 74 9 59 22 56C23 41 35 31 46 37C53 25 75 25 82 37C93 31 105 41 106 56C119 59 123 74 115 83C119 95 111 108 95 108Z" fill="url(#v)"/><path d="M64 30V14" stroke="#8a34c9" stroke-width="4" stroke-linecap="round"/><circle cx="64" cy="12" r="6" fill="#ffd36e"/><rect x="24" y="51.5" width="80" height="43" rx="21.5" fill="url(#ecran)"/><rect x="40" y="63" width="12" height="16" rx="6" fill="#ffe3ff"/><rect x="76" y="63" width="12" height="16" rx="6" fill="#ffe3ff"/><path d="M56 83c5 4 11 4 16 0" stroke="#ffe3ff" stroke-width="3.5" stroke-linecap="round" fill="none"/><ellipse cx="22" cy="86" rx="5" ry="3.5" fill="#ff9fd8" opacity=".7"/><ellipse cx="106" cy="86" rx="5" ry="3.5" fill="#ff9fd8" opacity=".7"/></g>` },
+];
+const g = document.getElementById("grille");
+visages.forEach((v, i) => {
+  // identifiants de dégradés propres à chaque dessin (sinon les SVG d'une même page se mélangent)
+  const dessin = (t, k) => `<svg width="${t}" height="${t}" viewBox="0 0 128 128" role="img" aria-label="${v.nom}">${v.svg.replaceAll('id="v"', `id="v${i}${k}"`).replaceAll("url(#v)", `url(#v${i}${k})`).replaceAll('id="ecran"', `id="e${i}${k}"`).replaceAll("url(#ecran)", `url(#e${i}${k})`)}</svg>`;
+  g.insertAdjacentHTML(
+    "beforeend",
+    `<section class="carte"><h2>${v.nom}</h2><div class="tailles">${dessin(150, "a")}${dessin(64, "b")}${dessin(32, "c")}</div><div class="fond-clair">${dessin(64, "d")}${dessin(32, "e")}</div><p>${v.texte}</p></section>`,
+  );
+});
+</script>
+</body>
+</html>
