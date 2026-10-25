@@ -2,7 +2,7 @@
   // Accueil de Hameau : le bureau des IA, vu de haut. Les agents rejouent ce que le journal du cerveau note (lire un mail,
   // écrire une fiche, avancer un chantier…). Survoler montre les noms, cliquer une zone ouvre sa fiche.
   import { connect } from "@etabli/sdk";
-  import { cerveau, type EtatServeur, type Rapport, type Tache } from "@hameau/commun";
+  import { cerveau, ilYa, type EtatServeur, type Evenement, type Rapport, type Tache } from "@hameau/commun";
   import type { Piece } from "../../src/bureau/bureau";
   import { Vivant, type Survol } from "../../src/bureau/vivant";
 
@@ -15,6 +15,23 @@
   let serveur = $state<EtatServeur | null>(null);
   let erreur = $state("");
   let dernier = 0;
+  // ce qui s'est passé depuis la dernière visite, à rejouer en accéléré si Bryan le veut
+  let absence = $state<Evenement[]>([]);
+  const CLE = "hameau-derniere-action";
+  const lireVu = () => {
+    try {
+      return Number(localStorage.getItem(CLE)) || 0;
+    } catch {
+      return 0;
+    }
+  };
+  const noterVu = (id: number) => {
+    try {
+      localStorage.setItem(CLE, String(id));
+    } catch {
+      /* stockage indisponible : on rejouera simplement moins */
+    }
+  };
 
   const enCours = $derived(taches.filter((t) => t.actif && t.en_cours));
   const questions = $derived(courrier.reduce((n, r) => n + r.questions.filter((q) => q.r === null).length, 0));
@@ -31,9 +48,15 @@
 
   async function journal(): Promise<void> {
     try {
-      // au démarrage, les dix dernières actions ; ensuite, seulement les nouvelles
+      // au démarrage, les dix dernières actions (et ce qui a eu lieu depuis ta dernière visite) ; ensuite, les nouvelles
+      const premier = dernier === 0;
       const evs = await cerveau.evenements(dernier || -10);
       if (evs.length) dernier = Math.max(dernier, ...evs.map((e) => e.id));
+      if (premier) {
+        const vu = lireVu();
+        if (vu && dernier > vu + 10) absence = await cerveau.evenements(vu, 200);
+      }
+      if (dernier) noterVu(dernier);
       vivant?.jouer(evs);
     } catch (e) {
       erreur = (e as Error).message;
@@ -79,6 +102,13 @@
     <button title="Recentrer" onclick={() => vivant?.recentrer()}>◎</button>
   </div>
   {#if erreur}<p class="erreur">{erreur}</p>{/if}
+  {#if absence.length}
+    <div class="absence">
+      <span>Pendant ton absence : <b>{absence.length} actions</b> depuis {ilYa(absence[0]!.quand)}</span>
+      <button onclick={() => (vivant?.jouer(absence), (absence = []))}>▶ Rejouer</button>
+      <button onclick={() => (absence = [])}>Ignorer</button>
+    </div>
+  {/if}
 
   {#if survol}
     <div class="tag" class:agent={survol.agent} style="left:{survol.x}px;top:{survol.y}px">{survol.texte}</div>
@@ -113,5 +143,7 @@
   .fiche small, .presents { opacity: 0.75; }
   .tag { position: absolute; transform: translate(-50%, -100%); pointer-events: none; padding: 3px 9px; border-radius: 999px; background: var(--surface, #1e1e22); border: 1px solid var(--border, rgba(255, 255, 255, 0.1)); font-size: 12px; font-weight: 700; white-space: nowrap; }
   .tag.agent { background: var(--accent, #c98bff); color: #fff; border-color: transparent; }
+  .absence { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; align-items: center; padding: 8px 12px; background: var(--surface, rgba(30, 30, 34, 0.9)); border: 1px solid var(--border, rgba(255, 255, 255, 0.08)); border-radius: 12px; }
+  .absence button { border: 1px solid var(--border, rgba(255, 255, 255, 0.12)); background: none; color: inherit; border-radius: 8px; padding: 5px 10px; cursor: pointer; font: inherit; }
   .erreur { position: absolute; bottom: 12px; left: 12px; color: #e25c4a; margin: 0; }
 </style>

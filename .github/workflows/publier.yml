@@ -1,0 +1,67 @@
+# Publication d'une version : à chaque étiquette « v1.2.3 » (le CHANGELOG.md doit avoir sa section), l'installateur MSI
+# est compilé avec le moteur Etable (sous-module) et les plugins de ce dépôt, puis publié dans les Releases du dépôt.
+# shortcut: pas de mise à jour automatique (dépôt privé, latest.json illisible sans jeton) ; à brancher le jour où les
+# versions sont publiées ailleurs.
+name: Publication
+
+on:
+  push:
+    tags: ["v*"]
+  # lancement à la main : construit l'installateur pour l'essayer, sans rien publier
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    name: Installateur Windows
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Étiquette et version de l'application identiques
+        if: github.ref_type == 'tag'
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          app=$(node -p "require('./hameau.conf.json').version")
+          if [ "$tag" != "$app" ]; then
+            echo "::error::Étiquette v$tag mais hameau.conf.json en $app : changez la version avant de publier."
+            exit 1
+          fi
+
+      - name: Notes de version (CHANGELOG.md)
+        if: github.ref_type == 'tag'
+        run: node etable/scripts/notes-version.mjs CHANGELOG.md "${GITHUB_REF_NAME#v}" --release > "$RUNNER_TEMP/notes-release.md"
+
+      - run: npm ci
+      - run: npm run check
+      - run: npm test
+
+      - name: Installateur MSI
+        run: npm run build -- --bundles msi
+
+      - name: Installateur à essayer (lancement à la main)
+        if: github.ref_type != 'tag'
+        uses: actions/upload-artifact@v6
+        with:
+          name: hameau-msi
+          path: etable/apps/desktop/src-tauri/target/release/bundle/msi/*.msi
+
+      - name: Publication de la version
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          msi=$(ls etable/apps/desktop/src-tauri/target/release/bundle/msi/*.msi)
+          gh release create "$GITHUB_REF_NAME" "$msi" --title "Hameau $GITHUB_REF_NAME" --notes-file "$RUNNER_TEMP/notes-release.md"
