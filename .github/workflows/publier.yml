@@ -7,7 +7,8 @@ name: Publication
 on:
   push:
     tags: ["v*"]
-  # lancement à la main : construit l'installateur pour l'essayer, sans rien publier
+  # sur une PR ou à la main : construit l'installateur pour l'essayer, sans rien publier
+  pull_request:
   workflow_dispatch:
 
 permissions:
@@ -53,7 +54,7 @@ jobs:
 
       - name: Installateur à essayer (lancement à la main)
         if: github.ref_type != 'tag'
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: hameau-msi
           path: etable/apps/desktop/src-tauri/target/release/bundle/msi/*.msi
