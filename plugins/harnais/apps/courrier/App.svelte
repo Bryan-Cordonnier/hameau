@@ -184,10 +184,10 @@
     display: grid;
     gap: 4px;
     align-content: end;
-    background: var(--fond);
-    color: #2b2620;
-    box-shadow: 0 4px 12px #0002;
-    transition: transform 0.2s;
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+    transition: border-color 0.2s;
   }
   .enveloppe::before {
     content: "";
@@ -195,12 +195,12 @@
     inset: 0 0 auto;
     height: 52px;
     clip-path: polygon(0 0, 100% 0, 50% 100%);
-    background: #0000000d;
+    background: var(--surface-2);
     border-radius: 12px 12px 0 0;
   }
   .enveloppe:hover,
   .enveloppe.choisie {
-    transform: translateY(-3px) rotate(-0.6deg);
+    border-color: var(--accent);
   }
   .enveloppe:focus-visible {
     outline: 2px solid var(--accent);
@@ -216,7 +216,7 @@
   }
   .enveloppe small,
   .de {
-    color: #6b6156;
+    color: var(--muted);
     font-size: 12px;
   }
   .de {
