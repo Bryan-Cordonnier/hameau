@@ -43,6 +43,25 @@ export interface Tache {
   type: TypeTache;
   debut: number;
   fin_s: number | null;
+  groupe: number | null;
+  parent: number | null;
+  statut: Statut;
+  blocage: string;
+  echeance: number | null;
+  notifier: "non" | "quotidien" | "max";
+  rapport_agl: boolean;
+}
+
+export type Statut = "a_faire" | "en_cours" | "bloque" | "termine";
+
+/** Une ligne du tableau d'AGL : un groupe ou projet, dans un arbre, éventuellement réservé à un agent. */
+export interface Groupe {
+  id: number;
+  nom: string;
+  parent: number | null;
+  agent_seul: string;
+  emoji: string;
+  archive: boolean;
 }
 
 export interface Question {
@@ -73,6 +92,9 @@ export interface ChantierResume {
   maj: number;
   actif: boolean;
   messages: number;
+  groupe: number | null;
+  statut: Statut;
+  echeance: number | null;
 }
 
 export interface Message {
@@ -137,17 +159,33 @@ export interface CarteCerveau {
 export const cerveau = {
   taches: () => appeler<Tache[]>("tasks_all"),
   modifierTache: (id: number, champs: Record<string, unknown>) => appeler<string>("task_update", { id, ...champs }),
-  creerTache: (champs: { post: string; title: string; instructions: string; recurrence?: string; end_days?: number }) => appeler<string>("task_create", champs),
+  creerTache: (champs: {
+    post: string;
+    title: string;
+    instructions: string;
+    recurrence?: string;
+    end_days?: number;
+    group?: number;
+    parent?: number;
+    due?: string;
+    notify?: "non" | "quotidien" | "max";
+    report_in_app?: boolean;
+  }) => appeler<string>("task_create", champs),
+  groupes: () => appeler<Groupe[]>("groups_list"),
+  creerGroupe: (champs: { name: string; parent?: number; only_agent?: string; emoji?: string }) => appeler<string>("group_create", champs),
+  modifierGroupe: (id: number, champs: { name?: string; parent?: number; only_agent?: string; emoji?: string; archived?: boolean }) =>
+    appeler<string>("group_update", { id, ...champs }),
   rapports: (tous = false) => appeler<Rapport[]>("report_list", { all: tous }),
   repondre: (id: number, index: number, answer: string) => appeler<string>("report_answer", { id, index, answer }),
   classer: (id: number, filed = true) => appeler<string>("report_file", { id, filed }),
   chantiers: () => appeler<ChantierResume[]>("project_list"),
   chantier: (id: number) => appeler<Chantier>("project_get", { id }),
   creerChantier: (title: string, doc = "") => appeler<string>("project_create", { title, doc }),
-  modifierChantier: (id: number, champs: { doc?: string; progress?: number; title?: string; active?: boolean }) => appeler<string>("project_update", { id, ...champs }),
+  modifierChantier: (id: number, champs: { doc?: string; progress?: number; title?: string; active?: boolean; group?: number; status?: string; due?: string }) => appeler<string>("project_update", { id, ...champs }),
   ecrireChantier: (id: number, text: string) => appeler<string>("project_message", { id, text }),
   evenements: (apres: number, limite = 200) => appeler<Evenement[]>("island_events", { after: apres, limit: limite }),
   serveur: () => appeler<EtatServeur>("server_status"),
+  creerAgent: (name: string, engine: string) => appeler<{ agent: string; cle: string }>("agent_create", { name, engine }),
   reglages: () => appeler<Record<string, string>>("settings_get"),
   regler: (key: string, value: string) => appeler<string>("settings_set", { key, value }),
   agents: () => appeler<Agent[]>("agents_list"),

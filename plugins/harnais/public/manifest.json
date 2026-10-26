@@ -1,6 +1,6 @@
 {
   "id": "harnais",
-  "name": "Hameau",
+  "name": "AGL",
   "version": "0.1.0",
   "apiVersion": "^3",
   "author": "Bryan Cordonnier",
@@ -10,14 +10,16 @@
   "permissions": ["distant"],
   "apps": [
     { "id": "ile", "name": "Le hameau", "entry": "apps/ile/index.html", "accepts": [] },
-    { "id": "tableau", "name": "Tableau", "entry": "apps/tableau/index.html", "accepts": [] },
+    { "id": "tableau", "name": "Tableau", "entry": "apps/tableau/index.html", "accepts": ["taches"] },
+    { "id": "reflexes", "name": "Réflexes", "entry": "apps/reflexes/index.html", "accepts": [] },
     { "id": "chantiers", "name": "Chantiers", "entry": "apps/chantiers/index.html", "accepts": [] },
     { "id": "courrier", "name": "Courrier", "entry": "apps/courrier/index.html", "accepts": [] },
     { "id": "petitmot", "name": "Petit mot", "entry": "apps/petitmot/index.html", "accepts": [] }
   ],
   "pages": [
-    { "id": "ile", "title": "Hameau", "icon": "ile", "layout": { "type": "app", "app": "ile" } },
-    { "id": "tableau", "title": "Tableau", "icon": "tableau", "layout": { "type": "app", "app": "tableau" } },
+    { "id": "ile", "title": "Accueil", "icon": "ile", "layout": { "type": "app", "app": "ile" } },
+    { "id": "tableau", "title": "Tâches", "icon": "tableau", "layout": { "type": "app", "app": "tableau" } },
+    { "id": "reflexes", "title": "Réflexes", "icon": "reflexe", "layout": { "type": "app", "app": "reflexes" } },
     { "id": "chantiers", "title": "Chantiers", "icon": "chantier", "layout": { "type": "app", "app": "chantiers" } },
     { "id": "courrier", "title": "Courrier", "icon": "courrier", "layout": { "type": "app", "app": "courrier" } },
     { "id": "petitmot", "title": "Petit mot", "icon": "petitmot", "layout": { "type": "app", "app": "petitmot" } }

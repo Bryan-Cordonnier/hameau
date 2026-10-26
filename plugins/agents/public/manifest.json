@@ -8,6 +8,6 @@
   "color": "#d9774b",
   "icon": "settings",
   "permissions": ["distant"],
-  "apps": [{ "id": "equipe", "name": "Équipe", "entry": "apps/equipe/index.html", "accepts": [] }],
+  "apps": [{ "id": "equipe", "name": "Équipe", "entry": "apps/equipe/index.html", "accepts": ["agent"] }],
   "pages": [{ "id": "equipe", "title": "Équipe", "icon": "equipe", "layout": { "type": "app", "app": "equipe" } }]
 }
