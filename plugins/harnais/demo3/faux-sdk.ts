@@ -27,6 +27,7 @@ const evenements: { id: number; quand: number; agent: string; action: string; ci
 export function pousser(agent: string, action: string, cible: string, resume: string): void {
   evenements.push({ id: evenements.length + 1, quand: Math.floor(Date.now() / 1000), agent, action, cible, resume, resultat: "ok" });
 }
+const reglages: Record<string, string> = { session_minutes: "45", silence: "00:00-07:00", llm_contexte: "65536", llm_emplacements: "1", llm_temperature: "", llm_reflexion: "off", llm_cache: "q4_0", configs_modeles: JSON.stringify([{ id: "max-seul", nom: "Max seul", modeles: [{ fichier: "Qwen3.8-27B-IQ4_XS_4BPW.gguf", contexte: 65536, emplacements: 1 }] }]), config_active: "max-seul" };
 const agents = ["max", "claude-code-pc", "hameau"].map((nom) => ({ nom, actif: true, cree: "", derniere_action: null, droits: [] }));
 
 function repondre(outil: string, a: Record<string, unknown>): unknown {
@@ -37,7 +38,9 @@ function repondre(outil: string, a: Record<string, unknown>): unknown {
     case "agents_list": return agents;
     case "report_list": return [];
     case "server_status": return { cartes: [], modele: null, en_ligne: false };
-    case "settings_get": return { session_minutes: "45", silence: "00:00-07:00", llm_contexte: "65536", llm_emplacements: "1", llm_temperature: "", llm_reflexion: "off", llm_cache: "q4_0" };
+    case "settings_get": return reglages;
+    case "agent_create": return { agent: a.name, cle: "cle-de-demo-0000" };
+    case "settings_set": reglages[String(a.key)] = String(a.value); return "ok";
     case "island_events": {
       const apres = Number(a.after ?? 0);
       return apres < 0 ? evenements.slice(apres) : evenements.filter((e) => e.id > apres);

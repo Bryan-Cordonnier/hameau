@@ -185,6 +185,7 @@ export const cerveau = {
   ecrireChantier: (id: number, text: string) => appeler<string>("project_message", { id, text }),
   evenements: (apres: number, limite = 200) => appeler<Evenement[]>("island_events", { after: apres, limit: limite }),
   serveur: () => appeler<EtatServeur>("server_status"),
+  creerAgent: (name: string, engine: string) => appeler<{ agent: string; cle: string }>("agent_create", { name, engine }),
   reglages: () => appeler<Record<string, string>>("settings_get"),
   regler: (key: string, value: string) => appeler<string>("settings_set", { key, value }),
   agents: () => appeler<Agent[]>("agents_list"),

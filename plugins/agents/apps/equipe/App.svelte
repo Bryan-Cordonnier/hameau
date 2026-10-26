@@ -39,6 +39,60 @@
   // brouillon des champs modifiés, enregistré d'un coup
   let brouillon = $state<Record<string, string>>({});
   let message = $state("");
+  // vue du centre : un agent, les configurations de modèles, un nouvel agent, ou le tutoriel « connecter Claude »
+  let vue = $state<"agent" | "configs" | "nouveau" | "claude">("agent");
+  let nNom = $state("");
+  let nMoteur = $state("claude:sonnet");
+  let cree = $state<{ agent: string; cle: string } | null>(null);
+  const URL_CERVEAU = "https://vm-cerveau2.tail11578e.ts.net/mcp";
+  const commandeClaude = (cle: string) => `claude mcp add --scope user --transport http cerveau ${URL_CERVEAU} --header "Authorization: Bearer ${cle}"`;
+
+  interface ModeleLocal {
+    fichier: string;
+    contexte?: number;
+    emplacements?: number;
+  }
+  interface Config {
+    id: string;
+    nom: string;
+    modeles: ModeleLocal[];
+  }
+  const configs = $derived.by<Config[]>(() => {
+    try {
+      return JSON.parse(reglages.configs_modeles || "[]") as Config[];
+    } catch {
+      return [];
+    }
+  });
+  let cBrouillon = $state<Config[] | null>(null);
+  const FICHIERS = ["Qwen3.8-27B-IQ4_XS_4BPW.gguf", "LFM2.5-24B-A2B-QAD-Q4_0.gguf"];
+  /** Le brouillon des configurations, créé à la première modification. */
+  const brouillonConfigs = (): Config[] => (cBrouillon ??= structuredClone($state.snapshot(configs)));
+  const idDe = (c: Config) => c.id || c.nom.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "config";
+
+  async function enregistrerConfigs(active: string): Promise<void> {
+    try {
+      if (cBrouillon) await cerveau.regler("configs_modeles", JSON.stringify(cBrouillon.map((c) => ({ ...c, id: idDe(c) }))));
+      if (active !== (reglages.config_active ?? "")) await cerveau.regler("config_active", active);
+      reglages = await cerveau.reglages();
+      cBrouillon = null;
+      message = "Configurations enregistrées." + (active ? " Le modèle redémarre avec la configuration active." : "");
+      erreur = "";
+    } catch (e) {
+      erreur = (e as Error).message;
+    }
+  }
+
+  async function creerAgent(): Promise<void> {
+    try {
+      cree = await cerveau.creerAgent(nNom.trim(), nMoteur);
+      await charger();
+      erreur = "";
+    } catch (e) {
+      erreur = (e as Error).message;
+    }
+  }
+  const copier = (t: string) => void navigator.clipboard?.writeText(t).catch(() => {});
 
   async function charger(): Promise<void> {
     try {
@@ -88,29 +142,92 @@
     {#if erreur}<p class="erreur" role="alert">{erreur}</p>{/if}
     <p class="groupe">🏝️ Habitants (sur ton serveur)</p>
     {#each habitants as a}
-      <button class="ag" aria-pressed={choisi === a.nom} onclick={() => (choisi = a.nom)}>
+      <button class="ag" aria-pressed={choisi === a.nom} onclick={() => ((choisi = a.nom), (vue = "agent"))}>
         <Personnage qui={habitant(a.nom)} taille={34} /><span><b>{nomDe(a.nom)}</b><small>{habitant(a.nom)?.role}</small></span>
       </button>
     {/each}
     <p class="groupe">🚉 Visiteurs (de l'extérieur)</p>
     {#each visiteurs as a}
-      <button class="ag" aria-pressed={choisi === a.nom} onclick={() => (choisi = a.nom)}>
+      <button class="ag" aria-pressed={choisi === a.nom} onclick={() => ((choisi = a.nom), (vue = "agent"))}>
         <Personnage qui={habitant(a.nom)} taille={34} /><span><b>{nomDe(a.nom)}</b><small>{a.nom}</small></span>
       </button>
     {/each}
-    <button class="ag ajout" disabled title="Plus tard : une API, un deuxième modèle sur d'autres cartes graphiques">
-      <span class="plus">＋</span><span><b>Nouvel agent</b><small>API, 2ᵉ modèle… bientôt</small></span>
+    <button class="ag ajout" aria-pressed={vue === "nouveau"} onclick={() => ((vue = "nouveau"), (cree = null), (nNom = ""))}>
+      <span class="plus">➕</span><span><b>Nouvel agent</b><small>local, Claude ou API</small></span>
     </button>
+    <p class="groupe">⚙️ Réglages</p>
+    <button class="ag petit-ag" aria-pressed={vue === "configs"} onclick={() => (vue = "configs")}><span class="plus">🧩</span><span><b>Configurations de modèles</b><small>{reglages.config_active || "aucune active"}</small></span></button>
+    <button class="ag petit-ag" aria-pressed={vue === "claude"} onclick={() => ((vue = "claude"), (cree = null), (nNom = "claude-pc2"), (nMoteur = "claude:sonnet"))}><span class="plus">🔌</span><span><b>Connecter Claude</b><small>tutoriel en 3 étapes</small></span></button>
     {#if autres.length}
       <p class="groupe">🔑 Autres accès au cerveau</p>
       {#each autres as a}
-        <button class="ag petit-ag" aria-pressed={choisi === a.nom} onclick={() => (choisi = a.nom)}><span class="plus">🔑</span><span><b>{a.nom}</b><small>{a.actif ? "actif" : "révoqué"}</small></span></button>
+        <button class="ag petit-ag" aria-pressed={choisi === a.nom} onclick={() => ((choisi = a.nom), (vue = "agent"))}><span class="plus">🔑</span><span><b>{a.nom}</b><small>{a.actif ? "actif" : "révoqué"}</small></span></button>
       {/each}
     {/if}
   </aside>
 
   <main class="reglages">
-    {#if agent}
+    {#if vue === "configs"}
+      {@const liste = cBrouillon ?? configs}
+      <h2>🧩 Configurations de modèles</h2>
+      <p class="petit">Chaque configuration dit quels modèles le serveur fait tourner (par exemple « Max seul » avec le 27B, ou « Duo » avec deux petits modèles). Une seule est active ; la changer redémarre le modèle. Pour l'instant, seul le premier modèle d'une configuration est lancé.</p>
+      {#each liste as c, i}
+        <div class="config">
+          <label class="radio"><input type="radio" name="active" checked={(reglages.config_active ?? "") === c.id} disabled={!c.id} onchange={() => enregistrerConfigs(c.id)} /> Active</label>
+          <input value={c.nom} placeholder="Nom (ex. Max seul)" oninput={(e) => (brouillonConfigs()[i]!.nom = e.currentTarget.value)} />
+          {#each c.modeles as m, j}
+            <div class="modele">
+              <input list="fichiers" value={m.fichier} placeholder="fichier .gguf" oninput={(e) => (brouillonConfigs()[i]!.modeles[j]!.fichier = e.currentTarget.value)} />
+              <input type="number" value={m.contexte ?? 32768} title="Contexte (jetons)" oninput={(e) => (brouillonConfigs()[i]!.modeles[j]!.contexte = Number(e.currentTarget.value))} />
+              <input type="number" min="1" max="4" value={m.emplacements ?? 1} title="Conversations en parallèle" oninput={(e) => (brouillonConfigs()[i]!.modeles[j]!.emplacements = Number(e.currentTarget.value))} />
+            </div>
+          {/each}
+          <div class="boutons-config">
+            <button onclick={() => brouillonConfigs()[i]!.modeles.push({ fichier: "", contexte: 16384, emplacements: 1 })}>➕ Modèle</button>
+            <button onclick={() => brouillonConfigs().splice(i, 1)}>🗑️ Supprimer</button>
+          </div>
+        </div>
+      {/each}
+      <datalist id="fichiers">{#each FICHIERS as f}<option value={f}></option>{/each}</datalist>
+      <div class="enregistrer">
+        <button onclick={() => brouillonConfigs().push({ id: "", nom: "", modeles: [{ fichier: FICHIERS[0]!, contexte: 65536, emplacements: 1 }] })}>➕ Configuration</button>
+        {#if cBrouillon}<button class="principal" onclick={() => enregistrerConfigs(reglages.config_active ?? "")}>Enregistrer</button><button onclick={() => (cBrouillon = null)}>Annuler</button>{/if}
+      </div>
+      {#if message}<p class="petit" role="status">{message}</p>{/if}
+    {:else if vue === "nouveau" || vue === "claude"}
+      {#if vue === "claude"}
+        <h2>🔌 Connecter Claude au cerveau</h2>
+        <ol class="etapes">
+          <li><b>Crée un accès pour ce Claude</b> (un par ordinateur) : choisis son nom et le modèle qu'il utilise d'habitude.</li>
+          <li><b>Copie la commande</b> qui s'affiche, et lance-la une fois dans un terminal sur cet ordinateur.</li>
+          <li><b>Vérifie</b> : dans Claude Code, demande « lis mes tâches dans le cerveau ». Il voit le tableau d'AGL, et ses rapports arrivent dans 📮 Courrier.</li>
+        </ol>
+      {:else}
+        <h2>➕ Nouvel agent</h2>
+        <p class="petit">Un agent est un accès au cerveau avec un moteur : un modèle local (selon la configuration), Claude (par ton abonnement) ou une API.</p>
+      {/if}
+      {#if !cree}
+        <label class="champ"><span>Nom (identifiant)</span><input bind:value={nNom} placeholder="claude-portable" /></label>
+        <label class="champ"><span>Moteur</span>
+          <select bind:value={nMoteur}>
+            <option value="claude:opus">Claude Opus (tâches difficiles)</option>
+            <option value="claude:sonnet">Claude Sonnet (intermédiaire)</option>
+            <option value="claude:haiku">Claude Haiku (simple et rapide)</option>
+            {#each configs as c}<option value="local:{c.id}">Local : {c.nom || c.id}</option>{/each}
+          </select></label>
+        <div class="enregistrer"><button class="principal" disabled={!nNom.trim()} onclick={creerAgent}>Créer l'accès</button></div>
+      {:else}
+        <p>✅ Agent <b>{cree.agent}</b> créé. Sa clé n'est montrée qu'une fois :</p>
+        {#if nMoteur.startsWith("claude:")}
+          <p class="petit">Commande à lancer dans un terminal, sur l'ordinateur de ce Claude :</p>
+          <code class="commande">{commandeClaude(cree.cle)}</code>
+          <div class="enregistrer"><button onclick={() => copier(commandeClaude(cree!.cle))}>📋 Copier la commande</button></div>
+        {:else}
+          <code class="commande">{cree.cle}</code>
+          <div class="enregistrer"><button onclick={() => copier(cree!.cle)}>📋 Copier la clé</button></div>
+        {/if}
+      {/if}
+    {:else if agent}
       <div class="onglets" role="tablist">
         {#each ONGLETS as [id, nom]}
           {#if (id !== "modele" && id !== "serveur") || estLocal}
@@ -127,6 +244,12 @@
           <div class="champ"><span>Depuis</span><b>{agent.cree}</b></div>
           <div class="champ"><span>Dernière action</span><b>{agent.derniere_action ?? "jamais"}</b></div>
           <div class="champ"><span>État</span><b>{agent.actif ? "actif" : "révoqué"}</b></div>
+          <label class="champ"><span>Moteur</span>
+            <select value={valeur(`moteur_${agent.nom}`)} onchange={(e) => (brouillon[`moteur_${agent.nom}`] = e.currentTarget.value)}>
+              <option value="">Non précisé</option>
+              <option value="claude:opus">Claude Opus</option><option value="claude:sonnet">Claude Sonnet</option><option value="claude:haiku">Claude Haiku</option>
+              {#each configs as c}<option value="local:{c.id}">Local : {c.nom || c.id}</option>{/each}
+            </select></label>
           {#if estLocal}
             <label class="champ large">
               <span>Personnalité et consigne</span>
@@ -222,6 +345,15 @@
 </div>
 
 <style>
+  h2 { margin: 0 0 8px; font-size: 18px; }
+  .config { display: grid; gap: 6px; padding: 10px; margin: 8px 0; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); }
+  .modele { display: grid; grid-template-columns: 1fr 110px 70px; gap: 6px; }
+  .radio { display: flex; gap: 6px; align-items: center; font-size: 13px; }
+  .radio input { width: auto; }
+  .boutons-config { display: flex; gap: 6px; }
+  .boutons-config button { padding: 4px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface-2); color: var(--text); cursor: pointer; font: inherit; }
+  .etapes { display: grid; gap: 8px; padding-left: 20px; }
+  .commande { display: block; padding: 10px; border-radius: 8px; background: var(--field); font-family: ui-monospace, Consolas, monospace; font-size: 12px; word-break: break-all; user-select: all; }
   textarea, input, select { width: 100%; box-sizing: border-box; padding: 8px 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); color: var(--text); font: inherit; }
   textarea { resize: vertical; line-height: 1.45; }
   .enregistrer { display: flex; gap: 8px; margin-top: 14px; }
