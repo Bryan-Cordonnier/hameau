@@ -22,6 +22,11 @@ const taches = [
   t(8, "Tri des mails", { type: "routine", recurrence: "every:60" }),
 ];
 const chantiers = [{ id: 1, titre: "Étude de marché Retux", agent: "max", avancement: 40, cree: now, maj: now, actif: true, messages: 6, groupe: 2, statut: "en_cours", echeance: now + 12 * jour }];
+// le faux journal du cerveau : la démo y pousse des actions
+const evenements: { id: number; quand: number; agent: string; action: string; cible: string; resume: string; resultat: string }[] = [];
+export function pousser(agent: string, action: string, cible: string, resume: string): void {
+  evenements.push({ id: evenements.length + 1, quand: Math.floor(Date.now() / 1000), agent, action, cible, resume, resultat: "ok" });
+}
 const agents = ["max", "claude-code-pc", "hameau"].map((nom) => ({ nom, actif: true, cree: "", derniere_action: null, droits: [] }));
 
 function repondre(outil: string, a: Record<string, unknown>): unknown {
@@ -33,7 +38,10 @@ function repondre(outil: string, a: Record<string, unknown>): unknown {
     case "report_list": return [];
     case "server_status": return { cartes: [], modele: null, en_ligne: false };
     case "settings_get": return { session_minutes: "45", silence: "00:00-07:00", llm_contexte: "65536", llm_emplacements: "1", llm_temperature: "", llm_reflexion: "off", llm_cache: "q4_0" };
-    case "island_events": return [];
+    case "island_events": {
+      const apres = Number(a.after ?? 0);
+      return apres < 0 ? evenements.slice(apres) : evenements.filter((e) => e.id > apres);
+    }
     case "group_create": groupes.push({ id: ++n, nom: String(a.name), parent: (a.parent as number) ?? null, agent_seul: String(a.only_agent ?? ""), emoji: String(a.emoji ?? ""), archive: false }); return "ok";
     case "task_create": taches.push(t(++n, String(a.title), { poste: a.post, groupe: a.group ?? null, parent: a.parent ?? null })); return "ok";
     case "task_update": {
@@ -51,5 +59,6 @@ export async function connect() {
   return {
     distant: { appeler: async (outil: string, args: Record<string, unknown>) => ({ ok: true as const, texte: JSON.stringify(repondre(outil, args)) }) },
     onThemeChange: () => () => {},
+    send: (kind: string, data: unknown) => console.log("send", kind, JSON.stringify(data)),
   };
 }

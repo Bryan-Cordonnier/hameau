@@ -1,6 +1,7 @@
 <script lang="ts">
   // L'équipe : les agents du cerveau. À gauche la liste (habitants de l'île, visiteurs, autres accès), au centre les réglages
   // de l'agent choisi (identité, permissions, modèle, serveur), à droite sa fiche « inventaire ».
+  import { connect } from "@etabli/sdk";
   import { cerveau, habitant, nomDe, Personnage, type Agent, type EtatServeur } from "@hameau/commun";
 
   const ACTIONS: Record<string, { emoji: string; nom: string }> = {
@@ -48,6 +49,11 @@
     }
   }
   void charger();
+  // ouverte depuis l'accueil (« 👤 Profil » sur un agent) : on montre cet agent
+  void connect().then((e) => {
+    const id = (e.incoming?.kind === "agent" && (e.incoming.data as { id?: string }).id) || "";
+    if (id) choisi = id;
+  });
 
   const valeur = (cle: string) => brouillon[cle] ?? reglages[cle] ?? "";
   const changes = $derived(Object.keys(brouillon).filter((c) => brouillon[c] !== (reglages[c] ?? "")));

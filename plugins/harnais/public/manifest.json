@@ -10,7 +10,7 @@
   "permissions": ["distant"],
   "apps": [
     { "id": "ile", "name": "Le hameau", "entry": "apps/ile/index.html", "accepts": [] },
-    { "id": "tableau", "name": "Tableau", "entry": "apps/tableau/index.html", "accepts": [] },
+    { "id": "tableau", "name": "Tableau", "entry": "apps/tableau/index.html", "accepts": ["taches"] },
     { "id": "chantiers", "name": "Chantiers", "entry": "apps/chantiers/index.html", "accepts": [] },
     { "id": "courrier", "name": "Courrier", "entry": "apps/courrier/index.html", "accepts": [] },
     { "id": "petitmot", "name": "Petit mot", "entry": "apps/petitmot/index.html", "accepts": [] }

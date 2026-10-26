@@ -1,7 +1,6 @@
 // Du journal du cerveau au bureau : chaque action (déjà traduite en « lieu + geste » pour l'ancienne île) devient « aller à
 // telle zone de l'open space et y faire tel geste ». Pur, sans three.js, pour être testé.
 import type { Action, Geste as GesteIle, Lieu } from "../ile/actions";
-import type { Geste } from "./pion";
 
 /** La zone du bureau qui correspond à chaque lieu de l'île. */
 export const ZONE: Record<Lieu, string> = {
@@ -16,6 +15,9 @@ export const ZONE: Record<Lieu, string> = {
   centrale: "serveur",
   cabane: "boss",
 };
+
+/** Ce que fait un agent à son poste. */
+export type Geste = "attend" | "tape" | "lit" | "porte" | "telephone" | "cafe" | "dort" | "teste";
 
 const GESTE: Record<GesteIle, Geste> = { lit: "lit", ecrit: "tape", trie: "porte", tablette: "telephone", regarde: "lit", travaille: "tape" };
 

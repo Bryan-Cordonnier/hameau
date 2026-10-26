@@ -1,6 +1,7 @@
 <script lang="ts">
   // Les tâches d'AGL : une ligne par groupe ou projet (en arbre), une colonne par statut. Les cartes montrent l'agent,
   // l'avancement, l'échéance et les blocages ; une tâche se découpe en sous-tâches. À droite, la fiche de la carte choisie.
+  import { connect } from "@etabli/sdk";
   import { cerveau, habitant, nomDe, type Agent, type ChantierResume, type Groupe, type Tache } from "@hameau/commun";
   import { COLONNES, echeance, lignes, type Carte } from "../../src/tableau";
 
@@ -28,7 +29,12 @@
   let gParent = $state(0);
   let gAgent = $state("");
 
-  const tableau = $derived(lignes(groupes, taches, chantiers));
+  // ouverte depuis l'accueil (« 📋 Tâches » sur un agent) : seulement ses tâches, jusqu'à ce qu'on enlève le filtre
+  let filtreAgent = $state("");
+  void connect().then((e) => {
+    if (e.incoming?.kind === "taches") filtreAgent = (e.incoming.data as { agent?: string }).agent ?? "";
+  });
+  const tableau = $derived(lignes(groupes, filtreAgent ? taches.filter((t) => t.poste === filtreAgent) : taches, filtreAgent ? chantiers.filter((c) => c.agent === filtreAgent) : chantiers));
   const vraisAgents = $derived(agents.filter((a) => a.actif && habitant(a.nom)));
   const tache = $derived(choisie?.genre === "tache" ? (taches.find((t) => t.id === choisie!.id) ?? null) : null);
   const chantier = $derived(choisie?.genre === "chantier" ? (chantiers.find((c) => c.id === choisie!.id) ?? null) : null);
@@ -104,6 +110,7 @@
   <header>
     <h1>📋 Tâches</h1>
     <div class="actions">
+      {#if filtreAgent}<button onclick={() => (filtreAgent = "")}>✕ Seulement {nomDe(filtreAgent)}</button>{/if}
       <button onclick={() => (formulaire = "groupe")}>➕ Groupe</button>
       <button class="principal" onclick={() => nouvelleTache()}>➕ Tâche</button>
     </div>
