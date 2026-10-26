@@ -5,6 +5,20 @@ Chaque version a sa section ici avant d'être publiée : ce texte devient la Rel
 
 ## [Non publié]
 
+## [0.2.0] — 2026-10-26
+
+### Modifié
+
+- **Hameau devient AGL** (Agents Link) : nouveau logo (cerveau mi-binaire mi-circuit), thème sobre presque monochrome, icônes en émojis.
+- **Accueil** : un bureau fixe en 2D où l'on voit les agents travailler ; au survol, leur tâche en cours, leur profil, leurs tâches et un champ pour leur écrire.
+- **Tâches** : tableau en lignes (groupes et projets en arbre, réservables à un agent) et colonnes (À faire, En cours, Bloqué, Terminé), sous-tâches, échéances, « me prévenir à la fin » et « rapport dans AGL » ; les chantiers y apparaissent aussi.
+
+### Ajouté
+
+- **Réflexes** : les tâches qui reviennent, créées en les décrivant à Max ou à la main.
+- **Équipe** : moteur de chaque agent (local, Claude Opus, Sonnet ou Haiku), configurations de modèles locaux, nouvel agent, tutoriel « Connecter Claude ».
+- **Message rapide à Max** en bas de la colonne.
+
 ## [0.1.0] — 2026-10-25
 
 ### Ajouté
