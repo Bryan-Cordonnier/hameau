@@ -1,0 +1,3 @@
+/* Thème sombre d'AGL (copie des couleurs de distribution.json) pour les démos hors moteur. */
+:root { --page:#0f1012; --surface:#16181b; --surface-2:#1b1d21; --field:#202327; --border:#2a2d33; --text:#d8dbe0; --muted:#8a9099; --faint:#5f656e; --accent:#cfd4da; --accent-soft:#24272c; --accent-text:#0f1012; --scrim:rgba(15,16,18,.6); color-scheme: dark; }
+body { margin: 0; background: var(--page); color: var(--text); font: 14px/1.4 system-ui, sans-serif; }

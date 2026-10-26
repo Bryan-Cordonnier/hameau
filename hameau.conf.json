@@ -1,5 +1,5 @@
 {
-  "productName": "Hameau",
+  "productName": "AGL",
   "version": "0.1.0",
   "identifier": "fr.cordonnier.hameau",
   "app": {
@@ -7,7 +7,7 @@
       {
         "label": "main",
         "create": false,
-        "title": "Hameau",
+        "title": "AGL",
         "width": 1360,
         "height": 860,
         "minWidth": 1024,
@@ -21,7 +21,7 @@
       {
         "label": "apercu",
         "create": false,
-        "title": "Aperçu rapide — Hameau",
+        "title": "Aperçu rapide — AGL",
         "url": "apercu.html",
         "width": 1280,
         "height": 800,
@@ -50,7 +50,7 @@
     "createUpdaterArtifacts": false,
     "publisher": "Bryan Cordonnier",
     "copyright": "© 2026 Bryan Cordonnier",
-    "shortDescription": "Régler et utiliser Max et le cerveau",
+    "shortDescription": "Agents Link : relier les agents au cerveau",
     "windows": {
       "wix": {
         "upgradeCode": "4D052D1B-C352-4E1B-B42F-4FDBD2779FEB"

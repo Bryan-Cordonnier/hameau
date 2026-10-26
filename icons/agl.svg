@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="512" height="512">
+  <rect width="128" height="128" rx="28" fill="#15171b"/>
+  <!-- deux hémisphères -->
+  <path d="M61 26c-9-6-22-3-26 7-10 1-16 10-13 19-7 5-8 15-2 21-3 9 3 19 13 20 3 9 15 13 24 7 2-1 4-3 4-5V30c0-1-0-3 0-4z" fill="#d9dde3"/>
+  <path d="M67 26c9-6 22-3 26 7 10 1 16 10 13 19 7 5 8 15 2 21 3 9-3 19-13 20-3 9-15 13-24 7-2-1-4-3-4-5V30c0-1 0-3 0-4z" fill="#b9bfc8"/>
+  <!-- bits à gauche -->
+  <g font-family="ui-monospace,Consolas,monospace" font-weight="700" font-size="15" fill="#15171b" text-anchor="middle">
+    <text x="42" y="50">1</text><text x="30" y="70">0</text><text x="48" y="74">1</text><text x="38" y="94">0</text><text x="54" y="96">1</text>
+  </g>
+  <!-- circuit à droite -->
+  <g stroke="#15171b" stroke-width="4" stroke-linecap="round" fill="none">
+    <path d="M70 44h12l6 6v8"/><path d="M70 66h22"/><path d="M70 86h10l6-6h8"/>
+  </g>
+  <g fill="#15171b"><circle cx="88" cy="60" r="5"/><circle cx="96" cy="66" r="5"/><circle cx="98" cy="80" r="5"/></g>
+  <g fill="#5ee0b0"><circle cx="88" cy="60" r="2.2"/><circle cx="96" cy="66" r="2.2"/><circle cx="98" cy="80" r="2.2"/></g>
+</svg>
