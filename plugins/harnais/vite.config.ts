@@ -18,6 +18,7 @@ export default defineConfig({
       input: {
         ile: page("apps/ile"),
         tableau: page("apps/tableau"),
+        reflexes: page("apps/reflexes"),
         chantiers: page("apps/chantiers"),
         courrier: page("apps/courrier"),
         petitmot: page("apps/petitmot"),
