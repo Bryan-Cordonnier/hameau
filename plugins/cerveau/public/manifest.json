@@ -1,13 +1,34 @@
 {
   "id": "cerveau",
   "name": "Cerveau",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "apiVersion": "^3",
   "author": "Bryan Cordonnier",
-  "description": "La carte du cerveau : lobes, aires et noyaux reliés par des axones et des synapses, pour tout voir et tout éditer.",
+  "description": "La carte du cerveau : voir, ranger et modifier tout ce que les agents savent.",
   "color": "#6f8fd8",
   "icon": "settings",
-  "permissions": ["distant"],
-  "apps": [{ "id": "carte", "name": "Cerveau", "entry": "apps/carte/index.html", "accepts": [] }],
-  "pages": [{ "id": "carte", "title": "Cerveau", "icon": "cerveau", "layout": { "type": "app", "app": "carte" } }]
+  "permissions": [
+    "distant"
+  ],
+  "apps": [
+    {
+      "id": "carte",
+      "name": "Cerveau",
+      "entry": "apps/carte/index.html",
+      "accepts": [
+        "fiche"
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "id": "carte",
+      "title": "Cerveau",
+      "icon": "cerveau",
+      "layout": {
+        "type": "app",
+        "app": "carte"
+      }
+    }
+  ]
 }

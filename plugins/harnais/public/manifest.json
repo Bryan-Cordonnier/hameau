@@ -1,27 +1,98 @@
 {
   "id": "harnais",
   "name": "AGL",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "apiVersion": "^3",
   "author": "Bryan Cordonnier",
-  "description": "Utiliser les agents : l'île où on les voit travailler, le tableau des tâches, les chantiers, le courrier et le petit mot.",
+  "description": "Utiliser les agents : l'accueil où on les voit travailler, les projets, les tâches, les automatisations et les conversations.",
   "color": "#f2785a",
   "icon": "home",
-  "permissions": ["distant"],
+  "permissions": [
+    "distant"
+  ],
   "apps": [
-    { "id": "ile", "name": "Le hameau", "entry": "apps/ile/index.html", "accepts": [] },
-    { "id": "tableau", "name": "Tableau", "entry": "apps/tableau/index.html", "accepts": ["taches"] },
-    { "id": "reflexes", "name": "Réflexes", "entry": "apps/reflexes/index.html", "accepts": [] },
-    { "id": "chantiers", "name": "Chantiers", "entry": "apps/chantiers/index.html", "accepts": [] },
-    { "id": "courrier", "name": "Courrier", "entry": "apps/courrier/index.html", "accepts": [] },
-    { "id": "petitmot", "name": "Petit mot", "entry": "apps/petitmot/index.html", "accepts": [] }
+    {
+      "id": "accueil",
+      "name": "Accueil",
+      "entry": "apps/accueil/index.html",
+      "accepts": []
+    },
+    {
+      "id": "projets",
+      "name": "Projets",
+      "entry": "apps/projets/index.html",
+      "accepts": [
+        "projet"
+      ]
+    },
+    {
+      "id": "taches",
+      "name": "Tâches",
+      "entry": "apps/taches/index.html",
+      "accepts": [
+        "carte"
+      ]
+    },
+    {
+      "id": "automatisations",
+      "name": "Automatisations",
+      "entry": "apps/automatisations/index.html",
+      "accepts": []
+    },
+    {
+      "id": "conversations",
+      "name": "Conversations",
+      "entry": "apps/conversations/index.html",
+      "accepts": [
+        "conversation"
+      ]
+    }
   ],
   "pages": [
-    { "id": "ile", "title": "Accueil", "icon": "ile", "layout": { "type": "app", "app": "ile" } },
-    { "id": "tableau", "title": "Tâches", "icon": "tableau", "layout": { "type": "app", "app": "tableau" } },
-    { "id": "reflexes", "title": "Réflexes", "icon": "reflexe", "layout": { "type": "app", "app": "reflexes" } },
-    { "id": "chantiers", "title": "Chantiers", "icon": "chantier", "layout": { "type": "app", "app": "chantiers" } },
-    { "id": "courrier", "title": "Courrier", "icon": "courrier", "layout": { "type": "app", "app": "courrier" } },
-    { "id": "petitmot", "title": "Petit mot", "icon": "petitmot", "layout": { "type": "app", "app": "petitmot" } }
+    {
+      "id": "accueil",
+      "title": "Accueil",
+      "icon": "accueil",
+      "layout": {
+        "type": "app",
+        "app": "accueil"
+      }
+    },
+    {
+      "id": "projets",
+      "title": "Projets",
+      "icon": "projets",
+      "layout": {
+        "type": "app",
+        "app": "projets"
+      }
+    },
+    {
+      "id": "taches",
+      "title": "Tâches",
+      "icon": "taches",
+      "layout": {
+        "type": "app",
+        "app": "taches"
+      }
+    },
+    {
+      "id": "automatisations",
+      "title": "Automatisations",
+      "icon": "automatisations",
+      "layout": {
+        "type": "app",
+        "app": "automatisations"
+      }
+    },
+    {
+      "id": "conversations",
+      "title": "Conversations",
+      "icon": "conversations",
+      "layout": {
+        "type": "app",
+        "app": "conversations"
+      }
+    }
   ]
 }

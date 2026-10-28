@@ -1,14 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { habitant, nomDe } from "./habitants";
+import { nomAffiche } from "./agl";
 import { ilYa } from "./temps";
 
-describe("habitants", () => {
-  it("reconnaît Max, Claude et les clients qui ne sont pas des agents", () => {
-    expect(habitant("max")).toMatchObject({ nom: "Max", genre: "habitant", forme: "galet" });
-    expect(habitant("claude-code-pc")).toMatchObject({ nom: "Claude", genre: "visiteur", forme: "etoile" });
-    expect(habitant("hameau")).toBeNull();
-    expect(habitant("telephone-bryan")).toBeNull();
-    expect(nomDe("bryan")).toBe("Toi");
+describe("noms", () => {
+  it("Bryan est « Toi », Claude et les agents ont leur nom", () => {
+    expect(nomAffiche("hameau")).toBe("Toi");
+    expect(nomAffiche("bryan")).toBe("Toi");
+    expect(nomAffiche("claude-code-pc")).toBe("Claude");
+    expect(nomAffiche("max", [{ nom: "max" } as never])).toBe("Max");
   });
 });
 

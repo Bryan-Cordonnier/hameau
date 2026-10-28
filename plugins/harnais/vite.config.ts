@@ -16,12 +16,11 @@ export default defineConfig({
     chunkSizeWarningLimit: 1500,
     rollupOptions: {
       input: {
-        ile: page("apps/ile"),
-        tableau: page("apps/tableau"),
-        reflexes: page("apps/reflexes"),
-        chantiers: page("apps/chantiers"),
-        courrier: page("apps/courrier"),
-        petitmot: page("apps/petitmot"),
+        accueil: page("apps/accueil"),
+        projets: page("apps/projets"),
+        taches: page("apps/taches"),
+        automatisations: page("apps/automatisations"),
+        conversations: page("apps/conversations"),
       },
     },
   },
