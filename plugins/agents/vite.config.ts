@@ -16,7 +16,8 @@ export default defineConfig({
     chunkSizeWarningLimit: 1500,
     rollupOptions: {
       input: {
-        equipe: page("apps/equipe"),
+        agents: page("apps/agents"),
+        parametres: page("apps/parametres"),
       },
     },
   },

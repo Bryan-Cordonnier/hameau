@@ -1,4 +1,5 @@
 export * from "./cerveau";
-export * from "./habitants";
+export * from "./agl";
 export * from "./temps";
-export { default as Personnage } from "./Personnage.svelte";
+export { default as Pixel } from "./Pixel.svelte";
+export { default as Recherche } from "./Recherche.svelte";

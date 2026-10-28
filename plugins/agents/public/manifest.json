@@ -1,13 +1,49 @@
 {
   "id": "agents",
-  "name": "Équipe",
-  "version": "0.1.0",
+  "name": "Agents",
+  "version": "0.3.0",
   "apiVersion": "^3",
   "author": "Bryan Cordonnier",
-  "description": "Régler les agents : identité, personnalité, permissions, modèle local et état du serveur.",
+  "description": "Gérer les agents (rôle, moteur, permissions, accès externes) et les paramètres de l'AGL (connecteurs, coffre).",
   "color": "#d9774b",
   "icon": "settings",
-  "permissions": ["distant"],
-  "apps": [{ "id": "equipe", "name": "Équipe", "entry": "apps/equipe/index.html", "accepts": ["agent"] }],
-  "pages": [{ "id": "equipe", "title": "Équipe", "icon": "equipe", "layout": { "type": "app", "app": "equipe" } }]
+  "permissions": [
+    "distant"
+  ],
+  "apps": [
+    {
+      "id": "agents",
+      "name": "Agents",
+      "entry": "apps/agents/index.html",
+      "accepts": [
+        "agent"
+      ]
+    },
+    {
+      "id": "parametres",
+      "name": "Paramètres AGL",
+      "entry": "apps/parametres/index.html",
+      "accepts": []
+    }
+  ],
+  "pages": [
+    {
+      "id": "agents",
+      "title": "Agents",
+      "icon": "agents",
+      "layout": {
+        "type": "app",
+        "app": "agents"
+      }
+    },
+    {
+      "id": "parametres",
+      "title": "Paramètres AGL",
+      "icon": "parametres",
+      "layout": {
+        "type": "app",
+        "app": "parametres"
+      }
+    }
+  ]
 }

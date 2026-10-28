@@ -47,16 +47,16 @@
   "logoPlein": true,
   "logoViewBox": "0 0 128 128",
   "icons": {
-    "ile": "🏢",
-    "tableau": "📋",
-    "chantier": "🏗️",
-    "courrier": "📮",
-    "equipe": "🤖",
+    "accueil": "🏢",
+    "projets": "🗺️",
+    "taches": "📋",
+    "automatisations": "⚡",
+    "conversations": "💬",
+    "agents": "🤖",
+    "parametres": "⚙️",
     "cerveau": "🧠",
-    "petitmot": "💬",
     "home": "🏢",
-    "settings": "⚙️",
-    "reflexe": "⚡"
+    "settings": "⚙️"
   },
   "tabs": false,
   "accueilCouleur": "#5ee0b0",
@@ -68,7 +68,7 @@
   },
   "messageRapide": {
     "titre": "Écrire à Max",
-    "outil": "quick_message",
-    "page": "harnais/petitmot"
+    "outil": "agl_quick",
+    "page": "harnais/conversations"
   }
 }
