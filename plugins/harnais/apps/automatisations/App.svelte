@@ -95,7 +95,7 @@
     <button class="principal" onclick={() => editer()}>+ Automatisation</button>
   </div>
   {#if erreur}<p class="erreur">{erreur}</p>{/if}
-  {#if etat?.tout_arrete}<p class="pastille">⏸️ Tout est arrêté (Paramètres AGL) : aucune automatisation ne part.</p>{/if}
+  {#if etat?.tout_arrete}<p class="pastille">⏸️ Tout est arrêté (Paramètres → AGL) : aucune automatisation ne part.</p>{/if}
   <div class="pile">
     {#each etat?.automatisations ?? [] as a (a.id)}
       {@const ag = etat?.agents.find((x) => x.nom === a.agent)}

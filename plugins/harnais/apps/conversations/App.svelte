@@ -30,7 +30,11 @@
     }
   }
   void connect().then((e) => {
-    if (e.incoming?.kind === "conversation") choisie = Number((e.incoming.data as { id?: number }).id) || null;
+    if (e.incoming?.kind === "conversation") {
+      const d = e.incoming.data as { id?: number; nouvelle?: boolean };
+      if (d.nouvelle) nouvelle = [];
+      else choisie = Number(d.id) || null;
+    }
     void charger();
   });
   $effect(() => {
@@ -53,9 +57,6 @@
 
   const agents = $derived(etat?.agents ?? []);
   const emoji = (n: string) => agents.find((a) => a.nom === n)?.emoji ?? "🤖";
-  const max = $derived(etat?.conversations.find((c) => c.element) ?? null);
-  const seules = $derived(etat?.conversations.filter((c) => !c.element && c.agents.length === 1) ?? []);
-  const groupes = $derived(etat?.conversations.filter((c) => c.agents.length > 1) ?? []);
   const titre = (c: ConversationResume) => c.titre || c.agents.map((a) => nomAffiche(a, agents)).join(", ");
   const monTour = $derived(conv?.tour === "bryan");
   const attente = $derived(conv?.messages.some((m) => m.etat === "attente") ?? false);
@@ -148,25 +149,6 @@
 
 <Recherche ouvrir={(g, id) => g === "conversation" && choisir(Number(id))} />
 <div class="agl page">
-  <nav class="liste">
-    <button class="principal nouvelle" onclick={() => (nouvelle = [])}>+ Nouvelle conversation</button>
-    {#if max}
-      <button class="conv epinglee" class:active={choisie === max.id} onclick={() => choisir(max.id)}>
-        <span class="em">{emoji("max")}</span><span class="t"><b>Max</b><small>📌 Ton assistant · Element</small></span>
-      </button>
-    {/if}
-    {#each seules as c (c.id)}
-      <button class="conv" class:active={choisie === c.id} onclick={() => choisir(c.id)}>
-        <span class="em">{emoji(c.agents[0] ?? "")}</span><span class="t"><b>{titre(c)}</b><small>{c.dernier ?? ""}</small></span>
-      </button>
-    {/each}
-    {#if groupes.length}<div class="sous separation">À plusieurs</div>{/if}
-    {#each groupes as c (c.id)}
-      <button class="conv" class:active={choisie === c.id} onclick={() => choisir(c.id)}>
-        <span class="em">{c.agents.map(emoji).join("")}</span><span class="t"><b>{titre(c)}</b><small>{c.tour === "bryan" ? "À toi" : `Au tour de ${nomAffiche(c.tour ?? "", agents)}`}</small></span>
-      </button>
-    {/each}
-  </nav>
 
   <main>
     {#if erreur}<p class="erreur">{erreur} <button class="petit" onclick={() => (erreur = "")}>OK</button></p>{/if}
@@ -268,53 +250,12 @@
 <style>
   .page {
     display: grid;
-    grid-template-columns: 260px minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr);
     grid-template-rows: minmax(0, 1fr);
     gap: 18px;
     height: 100vh;
     box-sizing: border-box;
     padding-bottom: 14px !important;
-  }
-  .liste {
-    display: grid;
-    gap: 4px;
-    align-content: start;
-    overflow: auto;
-  }
-  .nouvelle {
-    margin-bottom: 10px;
-  }
-  .conv {
-    display: flex !important;
-    gap: 10px;
-    align-items: center;
-    text-align: left;
-    border: 1px solid transparent !important;
-  }
-  .conv.active {
-    border-color: var(--border) !important;
-    background: var(--surface-2) !important;
-  }
-  .epinglee {
-    background: var(--surface-2) !important;
-    margin-bottom: 8px;
-  }
-  .em {
-    font-size: 20px;
-  }
-  .t {
-    display: grid;
-    min-width: 0;
-  }
-  .t small {
-    color: var(--muted);
-    font-size: 11px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .separation {
-    margin: 12px 4px 4px;
   }
   main {
     display: grid;

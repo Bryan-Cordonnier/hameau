@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { NoeudCarte } from "@hameau/commun";
-import { disposer, fils, niveauDeDetail, slug, tracer } from "./carte";
+import { couper, disposer, fils, slug, tracer } from "./carte";
 
 const n = (rel: string, enfants: NoeudCarte[] = [], fiches = 0): NoeudCarte => ({
   rel,
@@ -37,15 +37,25 @@ describe("carte du cerveau", () => {
     expect(f.some((x) => x.de === "" && x.vers === "retux/")).toBe(true);
     expect(f.some((x) => x.vers === "pas-organises/maison/")).toBe(false);
   });
-  it("un fil contourne un bloc posé au milieu", () => {
-    const a = { x: 0, y: 0, l: 100, h: 40 };
-    const b = { x: 600, y: 0, l: 100, h: 40 };
-    expect(tracer(a, b, [])).toMatch(/^M.* L/);
-    expect(tracer(a, b, [{ x: 300, y: 0, l: 120, h: 60 }])).toContain("C");
+  it("carte mentale classique : chaque étage dans sa colonne, rien ne se chevauche, fils horizontaux", () => {
+    const d = disposer(arbre);
+    const par = (rel: string) => d.blocs.find((b) => b.rel === rel)!;
+    const retux = par("retux/");
+    const site = par("retux/site/");
+    expect(Math.sign(site.x - retux.x)).toBe(Math.sign(retux.x));
+    expect(Math.abs(site.x)).toBeGreaterThan(Math.abs(retux.x));
+    const boites = [...d.blocs, ...d.grappes];
+    for (let i = 0; i < boites.length; i++)
+      for (let j = i + 1; j < boites.length; j++) {
+        const a = boites[i]!;
+        const b = boites[j]!;
+        expect(Math.abs(a.x - b.x) < (a.l + b.l) / 2 && Math.abs(a.y - b.y) < (a.h + b.h) / 2).toBe(false);
+      }
+    expect(tracer({ x: 0, y: 0, l: 100, h: 40 }, { x: 400, y: 120, l: 100, h: 40 })).toBe("M50,0 C200,0 200,120 350,120");
   });
-  it("niveau de détail et noms sûrs", () => {
-    expect(niveauDeDetail(0.3)).toEqual({ nomsSections: false, nomsNeurones: false });
-    expect(niveauDeDetail(1)).toEqual({ nomsSections: true, nomsNeurones: true });
+  it("noms qui tiennent dans leur bloc, et noms sûrs", () => {
+    expect(couper("Court", 240, 20)).toBe("Court");
+    expect(couper("Un nom vraiment beaucoup trop long pour un bloc", 180, 14)).toMatch(/…$/);
     expect(slug("Projet maison — Été")).toBe("projet-maison-ete");
   });
 });
