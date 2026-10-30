@@ -5,6 +5,15 @@ Chaque version a sa section ici avant d'être publiée : ce texte devient la Rel
 
 ## [Non publié]
 
+## [0.3.1] — 2026-10-30
+
+### Modifié
+- Colonne : un seul Accueil, puis Cerveau, Agents, Projets, Tâches, Automatisations ; les conversations rangées par catégorie avec « + » ; « Écrire à Max » décollé du bas ; les réglages de l'AGL dans Paramètres → AGL ; colonne repliée bien centrée.
+- Cerveau : carte mentale classique (le cerveau au centre, les pôles à droite et à gauche, une colonne par étage, des fils courts), flèche pour déplier l'arbre, plus de cadre autour du bloc choisi.
+- Un bloc s'ouvre dans une fenêtre par-dessus la carte, avec son texte mis en forme et modifiable.
+- Projets : la fiche d'un projet s'ouvre en plein écran.
+- Mise à jour automatique : les versions sont signées et publiées avec latest.json.
+
 ## [0.3.0] — 2026-10-28
 
 L'AGL refait de A à Z d'après le cahier des fonctionnalités (`cahier/`), validé fonctionnalité par fonctionnalité.
