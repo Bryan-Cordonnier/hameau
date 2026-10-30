@@ -1,7 +1,7 @@
 {
   "id": "harnais",
   "name": "AGL",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "apiVersion": "^3",
   "author": "Bryan Cordonnier",
   "description": "Utiliser les agents : l'accueil où on les voit travailler, les projets, les tâches, les automatisations et les conversations.",
