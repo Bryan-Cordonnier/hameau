@@ -1,7 +1,6 @@
 # Publication d'une version : à chaque étiquette « v1.2.3 » (le CHANGELOG.md doit avoir sa section), l'installateur MSI
-# est compilé avec le moteur Etable (sous-module) et les plugins de ce dépôt, puis publié dans les Releases du dépôt.
-# shortcut: pas de mise à jour automatique (dépôt privé, latest.json illisible sans jeton) ; à brancher le jour où les
-# versions sont publiées ailleurs.
+# est compilé avec le moteur Etable (sous-module) et les plugins de ce dépôt, signé pour la mise à jour automatique, puis
+# publié dans les Releases avec latest.json, le fichier que l'AGL installé consulte (dépôt public).
 name: Publication
 
 on:
@@ -43,13 +42,25 @@ jobs:
 
       - name: Notes de version (CHANGELOG.md)
         if: github.ref_type == 'tag'
-        run: node etable/scripts/notes-version.mjs CHANGELOG.md "${GITHUB_REF_NAME#v}" --release > "$RUNNER_TEMP/notes-release.md"
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          node etable/scripts/notes-version.mjs CHANGELOG.md "$version" --texte > "$RUNNER_TEMP/notes.txt"
+          node etable/scripts/notes-version.mjs CHANGELOG.md "$version" --release > "$RUNNER_TEMP/notes-release.md"
 
       - run: npm ci
       - run: npm run check
       - run: npm test
 
       - name: Installateur MSI
+        if: github.ref_type != 'tag'
+        run: npm run build -- --bundles msi
+
+      - name: Installateur MSI signé pour la mise à jour
+        if: github.ref_type == 'tag'
+        env:
+          HAMEAU_RELEASE: "1"
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         run: npm run build -- --bundles msi
 
       - name: Installateur à essayer (lancement à la main)
@@ -65,4 +76,6 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           msi=$(ls etable/apps/desktop/src-tauri/target/release/bundle/msi/*.msi)
-          gh release create "$GITHUB_REF_NAME" "$msi" --title "Hameau $GITHUB_REF_NAME" --notes-file "$RUNNER_TEMP/notes-release.md"
+          test -f "$msi.sig" || { echo "::error::Pas de fichier .sig : la signature de mise à jour a échoué."; exit 1; }
+          node scripts/latest-json.mjs "$GITHUB_REF_NAME" "$msi" "$RUNNER_TEMP/notes.txt" > "$RUNNER_TEMP/latest.json"
+          gh release create "$GITHUB_REF_NAME" "$msi" "$msi.sig" "$RUNNER_TEMP/latest.json" --title "AGL $GITHUB_REF_NAME" --notes-file "$RUNNER_TEMP/notes-release.md"

@@ -1,10 +1,12 @@
 <script lang="ts">
   // La carte du cerveau (cahier/01) : un éditeur qui range tout seul. Souris dans un bloc = le déplacer ; clic sur sa
   // bordure = tirer un fil vers son nouveau parent (il y part avec tout ce qu'il contient). Clic droit = Nouveau…
-  // Clic sur un bloc = il s'agrandit (description, texte). Panneau à droite : l'arbre, façon explorateur.
+  // Clic sur un bloc = il s'ouvre dans une fenêtre par-dessus, texte mis en forme et modifiable. À droite : l'arbre, façon
+  // explorateur, qui se déplie et se replie avec la flèche.
   import { connect } from "@etabli/sdk";
   import { agl, Recherche, type CarteDuCerveau, type NoeudCarte } from "@hameau/commun";
-  import { disposer, fils, niveauDeDetail, PAS_ORGANISES, slug, SUPPRIMES, type Bloc, type Neurone } from "../../src/carte";
+  import { couper, disposer, fils, NEURONE, NEURONE_TEXTE, PAS_ORGANISES, slug, SUPPRIMES, TEXTE, type Bloc } from "../../src/carte";
+  import Editeur from "./Editeur.svelte";
 
   let donnees = $state<CarteDuCerveau | null>(null);
   let erreur = $state("");
@@ -39,7 +41,7 @@
   const positions = $derived(donnees?.disposition.positions ?? {});
   const dispo = $derived(donnees ? disposer(donnees.arbre, donnees.noeuds, positions) : { blocs: [], grappes: [] });
   const traces = $derived(fils(dispo));
-  const detail = $derived(niveauDeDetail(vue.k));
+  let choisi = $state<string | null>(null);
   const parRel = $derived(new Map(dispo.blocs.map((b) => [b.rel, b])));
   const supprimes = $derived(donnees?.arbre.enfants.find((e) => e.rel === SUPPRIMES) ?? null);
 
@@ -82,13 +84,15 @@
   }
 
   // ---- interactions : déplacer, tirer un fil ----
-  type Prise = { genre: "fond"; x: number; y: number; vx: number; vy: number } | { genre: "bloc"; cle: string; dx: number; dy: number; bouge: boolean; rel: string } | { genre: "fil"; de: string; x: number; y: number };
+  type Prise = { genre: "fond"; x: number; y: number; vx: number; vy: number } | { genre: "bloc"; cle: string; dx: number; dy: number; bouge: boolean; rel: string } | { genre: "fil"; de: string; x: number; y: number; cx: number; cy: number };
   let prise = $state<Prise | null>(null);
   let fil = $state<{ de: string; x1: number; y1: number; x2: number; y2: number } | null>(null);
   const surBord = (b: { x: number; y: number; l: number; h: number }, m: { x: number; y: number }) => {
     const bx = Math.abs(m.x - b.x) - b.l / 2;
     const by = Math.abs(m.y - b.y) - b.h / 2;
-    return bx > -9 / vue.k || by > -9 / vue.k;
+    // une bordure de 9 px à l'écran, mais jamais plus d'un cinquième du bloc : de loin, cliquer au milieu ouvre toujours
+    const marge = Math.min(9 / vue.k, Math.min(b.l, b.h) * 0.2);
+    return bx > -marge || by > -marge;
   };
   function basFond(e: PointerEvent): void {
     if (e.button !== 0) return;
@@ -102,8 +106,8 @@
     menu = null;
     svg!.setPointerCapture(e.pointerId);
     const m = versMonde(e.clientX, e.clientY);
-    if (surBord(b, m) && rel !== "") {
-      prise = { genre: "fil", de: rel, x: b.x, y: b.y };
+    if (surBord(b, m) && rel !== "" && !rel.endsWith("souvenirs")) {
+      prise = { genre: "fil", de: rel, x: b.x, y: b.y, cx: e.clientX, cy: e.clientY };
       fil = { de: rel, x1: b.x, y1: b.y, x2: m.x, y2: m.y };
     } else {
       prise = { genre: "bloc", cle, dx: m.x - b.x, dy: m.y - b.y, bouge: false, rel };
@@ -128,11 +132,19 @@
     prise = null;
     if (!p || !donnees) return;
     if (p.genre === "bloc") {
-      if (!p.bouge) ouvrir(p.rel);
+      if (!p.bouge) {
+        choisi = p.rel;
+        void ouvrir(p.rel);
+      }
       else await agl.disposer(donnees.disposition).catch((x) => (erreur = (x as Error).message));
     } else if (p.genre === "fil" && fil) {
       const m = versMonde(e.clientX, e.clientY);
       fil = null;
+      // un clic sur la bordure, sans tirer : on ouvre le bloc
+      if (Math.hypot(e.clientX - p.cx, e.clientY - p.cy) < 5) {
+        choisi = p.de;
+        return void ouvrir(p.de);
+      }
       const cible = dispo.blocs.find((b) => !b.libre && Math.abs(m.x - b.x) < b.l / 2 && Math.abs(m.y - b.y) < b.h / 2);
       if (cible && cible.rel !== p.de) await relier(p.de, cible.rel);
     }
@@ -188,6 +200,8 @@
   async function ouvrir(rel: string): Promise<void> {
     if (!donnees) return;
     menu = null;
+    modifie = false;
+    image = null;
     if (rel.endsWith("souvenirs")) {
       const noeud = trouver(donnees.arbre, rel.replace(/souvenirs$/, ""));
       ouvert = { rel, titre: "🖼️ Souvenirs", dossier: false, texte: "", avant: "", noeud, souvenirs: noeud?.souvenirs ?? [] };
@@ -199,12 +213,19 @@
     const texte = rel === "" ? "" : String(await agl.lire(fichier).catch(() => (dossier ? `# ${noeud?.titre ?? rel}\n\nDescription du dossier.\n` : "")));
     ouvert = { rel, titre: dossier ? (noeud?.titre ?? (rel || "Cerveau")) : (texte.match(/^# (.+)/m)?.[1] ?? rel), dossier, texte, avant: texte, noeud };
   }
+  let modifie = $state(false);
+  function fermerOuvert(): void {
+    if (modifie && !confirm("Fermer sans enregistrer les changements ?")) return;
+    ouvert = null;
+    image = null;
+    modifie = false;
+  }
   async function enregistrer(): Promise<void> {
     if (!ouvert) return;
     const fichier = ouvert.dossier ? `${ouvert.rel}_dossier.md` : ouvert.rel;
     const t = ouvert.texte;
     await agir(() => agl.ecrire(fichier, t, "Modifié depuis la carte du cerveau"), "Enregistré : les sommaires sont à jour.");
-    if (ouvert) ouvert.avant = t;
+    modifie = false;
   }
   async function voirImage(s: { rel: string; titre: string }): Promise<void> {
     const r = await agl.souvenir(s.rel);
@@ -274,7 +295,6 @@
     <button onclick={rangerCarte}>Ranger la carte</button>
     <button onclick={centrer}>Recentrer</button>
     <button onclick={() => (supprimesVisible = !supprimesVisible)}>🗑️ Supprimés</button>
-    <button class:principal={arbreVisible} onclick={() => (arbreVisible = !arbreVisible)}>🌳 Arbre</button>
   </div>
   {#if erreur}<p class="erreur flottant">{erreur} <button class="petit" onclick={() => (erreur = "")}>OK</button></p>{/if}
   {#if info}<p class="info flottant">{info} <button class="petit" onclick={() => (info = "")}>OK</button></p>{/if}
@@ -298,30 +318,26 @@
       {#each dispo.grappes as g (g.dossier)}
         <g>
           {#each g.neurones as n (n.rel)}
-            {#if detail.nomsNeurones}
-              <g
-                class="neurone"
-                role="button"
-                tabindex="-1"
-                transform="translate({n.x},{n.y})"
-                onpointerdown={(e) => basBloc(e, `${g.dossier}#neurones`, n.souvenirs ? "" : n.rel, { x: n.x, y: n.y, l: 128, h: 26 })}
-                ondblclick={() => ouvrir(n.rel)}
-                oncontextmenu={(e) => contexte(e, n.rel)}
-              >
-                <rect x="-64" y="-13" width="128" height="26" rx="7" style="--c:{n.couleur}" class:souvenirs={!!n.souvenirs} />
-                <text x="-56" y="4">{n.souvenirs ? "🖼️" : "📄"} {n.titre.length > 15 ? `${n.titre.slice(0, 14)}…` : n.titre}</text>
-              </g>
-            {:else}
-              <circle cx={n.x} cy={n.y} r={n.souvenirs ? 9 : 6} fill={n.couleur} opacity="0.8" />
-            {/if}
+            <g
+              class="neurone"
+              class:choisi={choisi === n.rel}
+              role="button"
+              tabindex="-1"
+              transform="translate({n.x},{n.y})"
+              onpointerdown={(e) => basBloc(e, `${g.dossier}#neurones`, n.rel, { x: n.x, y: n.y, l: NEURONE[0], h: NEURONE[1] })}
+              oncontextmenu={(e) => contexte(e, n.rel)}
+            >
+              <rect x={-NEURONE[0] / 2} y={-NEURONE[1] / 2} width={NEURONE[0]} height={NEURONE[1]} rx="8" style="--c:{n.couleur}" class:souvenirs={!!n.souvenirs} />
+              <text x={-NEURONE[0] / 2 + 10} y="4" style="font-size:{NEURONE_TEXTE}px">{n.souvenirs ? "🖼️" : "📄"} {couper(n.titre, NEURONE[0], NEURONE_TEXTE)}</text>
+            </g>
           {/each}
         </g>
       {/each}
       {#each dispo.blocs as b (b.rel)}
-        {@const nom = b.etage === "cerveau" || b.etage === "pole" || b.etage === "sujet" || detail.nomsSections}
         <g
           class="bloc {b.etage}"
           class:libre={b.libre}
+          class:choisi={choisi === b.rel}
           role="button"
           tabindex="-1"
           transform="translate({b.x},{b.y})"
@@ -331,15 +347,9 @@
         >
           <rect x={-b.l / 2} y={-b.h / 2} width={b.l} height={b.h} rx={b.etage === "cerveau" ? 22 : 12} style="--c:{b.couleur}" />
           {#if b.etage === "cerveau"}
-            <text x="0" y="9" text-anchor="middle" class="t-cerveau">🧠 Cerveau</text>
-            {#if vue.k < 0.45}<text x="0" y={-b.h / 2 - 10} text-anchor="middle" class="t-pole t-loin" style="font-size:{18 / vue.k}px">🧠 Cerveau</text>{/if}
-          {:else if vue.k < 0.45 && (b.etage === "pole" || b.etage === "sujet")}
-            <!-- de loin, les noms des pôles et des sujets grossissent pour rester lisibles -->
-            <text x="0" y={-b.h / 2 - 8} text-anchor="middle" class="t-{b.etage} t-loin" style="font-size:{(b.etage === 'pole' ? 15 : 11) / vue.k}px">{b.emoji} {b.nom}</text>
-          {:else if nom}
-            <text x={-b.l / 2 + 12} y="6" class="t-{b.etage}">{b.emoji} {b.nom.length > 18 ? `${b.nom.slice(0, 17)}…` : b.nom}</text>
+            <text x="0" y="10" text-anchor="middle" class="t-cerveau" style="font-size:{TEXTE.cerveau}px">🧠 Cerveau</text>
           {:else}
-            <text x="0" y="6" text-anchor="middle" class="t-{b.etage}">{b.emoji}</text>
+            <text x={-b.l / 2 + 14} y={TEXTE[b.etage] * 0.36} class="t-{b.etage}" style="font-size:{TEXTE[b.etage]}px">{b.emoji} {couper(b.nom, b.l, TEXTE[b.etage])}</text>
           {/if}
         </g>
       {/each}
@@ -367,9 +377,12 @@
     </div>
   {/if}
 
+  <button class="plier" class:ouvert={arbreVisible} onclick={() => (arbreVisible = !arbreVisible)} title={arbreVisible ? "Replier l'arbre" : "Déplier l'arbre"} aria-label={arbreVisible ? "Replier l'arbre" : "Déplier l'arbre"} aria-expanded={arbreVisible}>
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+  </button>
   {#if arbreVisible && donnees}
     <aside class="arbre">
-      <div class="ligne"><b>Arbre</b><span class="sous">glisse un élément sur un dossier pour le ranger</span></div>
+      <div class="arbre-tete"><b>Arbre</b><span class="sous">glisse un élément sur un dossier pour le ranger</span></div>
       {@render noeudArbre(donnees.arbre, 0)}
     </aside>
   {/if}
@@ -407,25 +420,30 @@
   {/if}
 
   {#if ouvert}
-    <div class="voile" role="presentation" onclick={() => (ouvert = null)}></div>
-    <aside class="panneau large">
-      <div class="ligne"><h2 class="flex">{ouvert.titre}</h2><span class="sous">{ouvert.rel}</span><button onclick={() => (ouvert = null)}>✕</button></div>
-      {#if ouvert.souvenirs}
-        <div class="galerie">
-          {#each ouvert.souvenirs as s}<button class="vignette" onclick={() => voirImage(s)}>🖼️ {s.titre}</button>{/each}
+    {@const o = ouvert}
+    <div class="scrim" role="presentation" onpointerdown={(e) => e.target === e.currentTarget && fermerOuvert()}>
+      <div class="fenetre" role="dialog" aria-modal="true" aria-label={o.titre}>
+        <div class="tete">
+          <span class="pastille-bloc">{o.dossier ? (blocDe(o.rel)?.emoji ?? "📁") : o.souvenirs ? "🖼️" : "📄"}</span>
+          <div class="tete-texte"><h2>{o.titre}</h2><span class="sous">{o.rel || "Cerveau"}{o.dossier && o.noeud ? ` · ${o.noeud.total} fiche${o.noeud.total > 1 ? "s" : ""}` : ""}</span></div>
+          <span class="espace"></span>
+          {#if !o.souvenirs && o.rel !== ""}<button class="principal" disabled={!modifie} onclick={enregistrer}>Enregistrer</button>{/if}
+          <button class="fermer" onclick={fermerOuvert} aria-label="Fermer">✕</button>
         </div>
-        {#if image}<figure><img src={image.url} alt={image.titre} /><figcaption class="sous">{image.titre}</figcaption></figure>{/if}
-      {:else if ouvert.rel === ""}
-        <p class="sous">Le point de départ de tout le cerveau.</p>
-      {:else}
-        {#if ouvert.dossier && ouvert.noeud}<p class="sous">{ouvert.noeud.total} fiche(s) dans ce bloc et ses enfants.</p>{/if}
-        <textarea class="edition" rows="22" bind:value={ouvert.texte}></textarea>
-        <div class="ligne">
-          <button class="principal" disabled={ouvert.texte === ouvert.avant} onclick={enregistrer}>Enregistrer</button>
-          <span class="sous">Format : « # Titre », une ligne vide, un résumé de 2-3 lignes, puis le détail.</span>
-        </div>
-      {/if}
-    </aside>
+        {#if o.souvenirs}
+          <div class="corps">
+            <div class="galerie">
+              {#each o.souvenirs as s}<button class="vignette" onclick={() => voirImage(s)}>🖼️ {s.titre}</button>{/each}
+            </div>
+            {#if image}<figure><img src={image.url} alt={image.titre} /><figcaption class="sous">{image.titre}</figcaption></figure>{/if}
+          </div>
+        {:else if o.rel === ""}
+          <div class="corps"><p class="sous">Le point de départ de tout le cerveau.</p></div>
+        {:else}
+          {#key o.rel}<Editeur texte={o.texte} onchange={(md, m) => { o.texte = md; modifie = m; }} />{/key}
+        {/if}
+      </div>
+    </div>
   {/if}
 </div>
 
@@ -448,7 +466,7 @@
     position: absolute;
     top: 12px;
     left: 12px;
-    right: 12px;
+    right: 62px;
     display: flex;
     gap: 8px;
     z-index: 3;
@@ -494,8 +512,20 @@
   .bloc {
     cursor: move;
   }
-  .bloc:hover rect {
+  .bloc:hover rect,
+  .neurone:hover rect {
     filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.18));
+  }
+  /* Pas de cadre du navigateur autour d'un bloc cliqué : le bloc choisi a juste un trait plus marqué. */
+  .bloc:focus,
+  .neurone:focus {
+    outline: none;
+  }
+  .bloc.choisi rect {
+    stroke-width: 4;
+  }
+  .neurone.choisi rect {
+    stroke-width: 2.5;
   }
   text {
     fill: var(--text);
@@ -503,24 +533,13 @@
   }
   .t-cerveau {
     fill: var(--accent-text);
-    font-size: 30px;
     font-weight: 800;
   }
   .t-pole {
-    font-size: 22px;
     font-weight: 700;
   }
   .t-sujet {
-    font-size: 17px;
     font-weight: 600;
-  }
-  .t-section {
-    font-size: 14px;
-  }
-  .t-loin {
-    paint-order: stroke;
-    stroke: var(--page);
-    stroke-width: 0.25em;
   }
   .neurone rect {
     fill: var(--surface-2);
@@ -529,9 +548,6 @@
   }
   .neurone rect.souvenirs {
     stroke-width: 2;
-  }
-  .neurone text {
-    font-size: 11px;
   }
   .neurone {
     cursor: pointer;
@@ -566,7 +582,7 @@
   }
   .arbre {
     position: absolute;
-    top: 60px;
+    top: 12px;
     right: 12px;
     bottom: 12px;
     width: 320px;
@@ -593,12 +609,88 @@
     color: var(--muted);
     font-size: 12px;
   }
-  .large {
-    width: min(760px, 96vw) !important;
+  /* Bloc ouvert : une fenêtre par-dessus la carte, comme l'aperçu rapide d'Établi. */
+  .scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    display: grid;
+    place-items: center;
+    padding: 5vh 6vw;
+    background: rgba(10, 14, 20, 0.42);
+    animation: fondu 0.15s ease-out;
   }
-  .edition {
-    font-family: ui-monospace, Consolas, monospace;
-    font-size: 13px !important;
+  @keyframes fondu {
+    from {
+      opacity: 0;
+    }
+  }
+  .fenetre {
+    width: min(1000px, 100%);
+    height: min(760px, 100%);
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+  }
+  .tete {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 64px;
+    padding: 0 14px 0 18px;
+    border-bottom: 1px solid var(--border);
+    flex: none;
+  }
+  .pastille-bloc {
+    font-size: 24px;
+  }
+  .tete-texte {
+    display: grid;
+    min-width: 0;
+  }
+  .tete-texte h2,
+  .tete-texte .sous {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .fermer {
+    width: 36px;
+    height: 36px;
+    padding: 0 !important;
+  }
+  .corps {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+  }
+  /* Flèche en haut à droite : déplie et replie l'arbre. */
+  .plier {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 5;
+    width: 38px;
+    height: 38px;
+    padding: 0 !important;
+    display: grid;
+    place-items: center;
+  }
+  .plier svg {
+    transition: transform 0.15s;
+  }
+  .plier.ouvert svg {
+    transform: rotate(180deg);
+  }
+  .arbre-tete {
+    display: grid;
+    gap: 2px;
+    padding: 0 42px 10px 0;
+    min-height: 38px;
   }
   .emoji {
     width: 60px !important;

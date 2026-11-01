@@ -46,7 +46,7 @@
       <span class="pastille">📋 {enCours} en cours</span>
       {#if bloquees}<span class="pastille bloque">✋ {bloquees} bloquée{bloquees > 1 ? "s" : ""}</span>{/if}
       {#if etat.tout_arrete}<span class="pastille">⏸️ Tout est arrêté</span>{/if}
-      {#if !etat.cartes_actives}<span class="pastille" title="Réglable dans Paramètres AGL">Les agents ne prennent pas les cartes</span>{/if}
+      {#if !etat.cartes_actives}<span class="pastille" title="Réglable dans Paramètres → AGL">Les agents ne prennent pas les cartes</span>{/if}
     {/if}
   </div>
   {#if erreur}<p class="erreur">{erreur}</p>{/if}

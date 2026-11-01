@@ -1,7 +1,7 @@
 {
   "id": "agents",
   "name": "Agents",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "apiVersion": "^3",
   "author": "Bryan Cordonnier",
   "description": "Gérer les agents (rôle, moteur, permissions, accès externes) et les paramètres de l'AGL (connecteurs, coffre).",
@@ -18,12 +18,6 @@
       "accepts": [
         "agent"
       ]
-    },
-    {
-      "id": "parametres",
-      "name": "Paramètres AGL",
-      "entry": "apps/parametres/index.html",
-      "accepts": []
     }
   ],
   "pages": [
@@ -35,15 +29,13 @@
         "type": "app",
         "app": "agents"
       }
-    },
+    }
+  ],
+  "settings": [
     {
-      "id": "parametres",
-      "title": "Paramètres AGL",
-      "icon": "parametres",
-      "layout": {
-        "type": "app",
-        "app": "parametres"
-      }
+      "id": "agl",
+      "title": "AGL",
+      "entry": "apps/parametres/index.html"
     }
   ]
 }

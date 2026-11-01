@@ -66,6 +66,12 @@
     "nom": "Cerveau",
     "url": "https://vm-cerveau2.tail11578e.ts.net/mcp"
   },
+  "accueil": "harnais/accueil",
+  "colonne": [["cerveau/carte", "agents/agents", "harnais/projets", "harnais/taches", "harnais/automatisations"]],
+  "conversations": {
+    "outil": "agl_conversations",
+    "page": "harnais/conversations"
+  },
   "messageRapide": {
     "titre": "Écrire à Max",
     "outil": "agl_quick",

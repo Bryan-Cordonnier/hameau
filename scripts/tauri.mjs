@@ -12,7 +12,9 @@ if (args.length === 0) {
   console.error("Usage : node scripts/tauri.mjs <commande Tauri>  (dev, build, android init, android build…)");
   process.exit(1);
 }
-const resultat = spawnSync("npx", ["tauri", ...args, "--config", join(racine, "hameau.conf.json")], {
+// Une version à publier (HAMEAU_RELEASE=1) produit aussi le fichier de signature de mise à jour : il faut la clé privée dans l'environnement.
+const configs = ["hameau.conf.json", ...(process.env.HAMEAU_RELEASE === "1" ? ["hameau.release.conf.json"] : [])];
+const resultat = spawnSync("npx", ["tauri", ...args, ...configs.flatMap((c) => ["--config", join(racine, c)])], {
   cwd: moteur,
   stdio: "inherit",
   shell: true,

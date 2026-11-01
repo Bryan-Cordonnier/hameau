@@ -1,7 +1,7 @@
 {
   "id": "cerveau",
   "name": "Cerveau",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "apiVersion": "^3",
   "author": "Bryan Cordonnier",
   "description": "La carte du cerveau : voir, ranger et modifier tout ce que les agents savent.",

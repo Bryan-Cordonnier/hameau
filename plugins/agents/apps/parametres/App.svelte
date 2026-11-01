@@ -31,7 +31,6 @@
 
 <Recherche />
 <div class="agl">
-  <div class="entete"><h1>Paramètres AGL</h1></div>
   {#if erreur}<p class="erreur">{erreur}</p>{/if}
   {#if info}<p class="sous">{info}</p>{/if}
 
