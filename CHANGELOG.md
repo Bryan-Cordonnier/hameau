@@ -5,6 +5,11 @@ Chaque version a sa section ici avant d'être publiée : ce texte devient la Rel
 
 ## [Non publié]
 
+## [0.3.2] — 2026-11-09
+
+### Corrigé
+- Connexion au cerveau : nouvelle adresse `cerveau.bryancordonnier.fr`, l'ancienne adresse Tailscale n'existant plus.
+
 ## [0.3.1] — 2026-10-30
 
 ### Modifié

@@ -64,7 +64,7 @@
   "tuilesNues": true,
   "distant": {
     "nom": "Cerveau",
-    "url": "https://vm-cerveau2.tail11578e.ts.net/mcp"
+    "url": "https://cerveau.bryancordonnier.fr/mcp"
   },
   "accueil": "harnais/accueil",
   "colonne": [["cerveau/carte", "agents/agents", "harnais/projets", "harnais/taches", "harnais/automatisations"]],
